@@ -84,9 +84,9 @@
   <div class="controls">
     <!-- Быстрые вкладки по датам -->
     <div class="tabs">
-      <button class="tab active" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
+      <button class="tab" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
       <button class="tab" id="tabYesterday" onclick="setDateFilter('yesterday')">Вчера</button>
-      <button class="tab" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
+      <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
     </div>
 
     <!-- Выбор конкретной даты -->
@@ -126,7 +126,7 @@
 <script>
   // Конфигурация Supabase
   const SUPABASE_URL = 'https://pkjrjtwlryuuconrpcnx.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_QfqhRHEjHYp_xA1nC_y7AQ__4pDx3-F'; // Вставьте ключ sb_publishable_...
+  const SUPABASE_ANON_KEY = 'sb_publishable_QfqhRHEjHYp_xA1nC_y7AQ__4pDx3-F';
   
   const GH_USER = 'NinoGrey';
   const GH_REPO = 'gnumner-v2';
@@ -139,11 +139,11 @@
 
   // Инициализация при загрузке
   window.addEventListener('DOMContentLoaded', () => {
-    setDateFilter('all'); // гарантирует сброс UI на "Все даты"
+    setDateFilter('all');
     loadTenders();
   });
 
-  // Загрузка данных из Supabase
+  // Загрузка абсолютно ВСЕХ данных из Supabase
   async function loadTenders() {
     const log = document.getElementById('statusLog');
     log.innerText = '⏳ Загрузка базы данных...';
@@ -151,7 +151,8 @@
     const { data, error } = await supabaseClient
       .from('tenders')
       .select('*')
-      .order('publish_date', { ascending: false });
+      .order('publish_date', { ascending: false })
+      .range(0, 99999); // Снимает ограничение по умолчанию в 1000 строк
 
     if (error) {
       log.innerText = '❌ Ошибка загрузки данных из Supabase: ' + error.message;
@@ -159,7 +160,6 @@
     }
 
     allTenders = data || [];
-    log.innerText = `✅ Загружено тендеров из базы: ${allTenders.length}`;
     applyFilters();
   }
 
@@ -176,7 +176,7 @@
     applyFilters();
   }
 
-  // Применение всех фильтров на клиенте
+  // Применение фильтров и динамический счетчик тендеров
   function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const statusVal = document.getElementById('statusFilter').value;
@@ -205,6 +205,10 @@
 
       return true;
     });
+
+    // Динамический счетчик отображаемых тендеров
+    const log = document.getElementById('statusLog');
+    log.innerHTML = `✅ Отображается тендеров: <b>${filtered.length}</b> (всего в базе: ${allTenders.length})`;
 
     renderTable(filtered);
   }
@@ -246,7 +250,6 @@
     if (error) {
       alert('Ошибка обновления статуса: ' + error.message);
     } else {
-      // Обновляем локально
       const target = allTenders.find(x => x.id === id);
       if (target) target.user_status = newStatus;
       applyFilters();
@@ -258,7 +261,6 @@
     const search = document.getElementById('searchInput').value.toLowerCase();
     const statusVal = document.getElementById('statusFilter').value;
     
-    // Берем текущий отфильтрованный датасет
     const rows = allTenders.map(t => ({
       'Дата публикации': t.publish_date,
       'Дата окончания': t.deadline_date || '',
@@ -302,12 +304,11 @@
 
       log.innerText = '⚙️ Парсер запущен. Проверяем новые тендеры в Supabase каждые 5 секунд...';
       
-      // Опрашиваем Supabase каждые 5 сек на предмет обновившихся строк
       let checks = 0;
       const interval = setInterval(async () => {
         checks++;
         await loadTenders();
-        if (checks >= 12) { // 1 минута опроса
+        if (checks >= 12) {
           clearInterval(interval);
           btn.disabled = false;
           log.innerText = '✅ Синхронизация завершена.';
