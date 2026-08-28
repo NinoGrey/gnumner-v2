@@ -28,7 +28,7 @@ h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
 .btn-excel:hover { background: #059669; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Улучшенная панель фильтров */
+/* Панель фильтров */
 .controls { background: var(--card-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
 .controls-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .controls-bottom { display: flex; width: 100%; }
@@ -43,16 +43,21 @@ input, select {
 }
 input[type="text"] { width: 100%; }
 
-/* Лог и статус */
 #statusLog { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; display: block; font-family: monospace; }
 
-/* Таблица с улучшенной типографикой и читаемостью */
-.table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); }
+/* Таблица */
+.table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); overflow-y: visible; }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; }
 th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-th { background: rgba(0,0,0,0.2); color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+th { 
+  background: rgba(0,0,0,0.2); color: var(--muted); font-weight: 600; font-size: 0.8rem; 
+  text-transform: uppercase; cursor: pointer; user-select: none; white-space: nowrap; position: relative;
+}
+th:hover { color: #fff; background: rgba(255,255,255,0.04); }
 
-/* Чередование строк и плавные подсветки статусов */
+.sort-icon { font-size: 0.75rem; margin-left: 4px; color: var(--muted); }
+
+/* Подсветка статусов строк */
 tr { transition: background-color 0.15s ease; }
 tr:hover { background: rgba(255,255,255,0.03); }
 tr.row-target { background: rgba(16, 185, 129, 0.04); }
@@ -60,32 +65,28 @@ tr.row-target:hover { background: rgba(16, 185, 129, 0.08); }
 tr.row-ignore { background: rgba(239, 68, 68, 0.04); opacity: 0.65; }
 tr.row-ignore:hover { background: rgba(239, 68, 68, 0.08); opacity: 0.9; }
 
-/* Текстовые акценты */
-.td-date-pub { color: var(--muted); font-size: 0.85rem; }
-.td-date-deadline { font-weight: 600; font-size: 0.9rem; }
+/* Дата публикации и жесткий запрет переноса дедлайна */
+.td-date-pub { color: var(--muted); font-size: 0.85rem; display: block; }
+.td-time-pub { font-size: 0.75rem; color: #64748b; font-family: monospace; }
+.td-date-deadline { font-weight: 600; font-size: 0.9rem; white-space: nowrap; }
 .deadline-soon { color: var(--warning); }
 .deadline-expired { color: var(--danger); text-decoration: line-through; }
 
-/* Категория-тег */
+/* Уникальный цветной тег категории */
 .category-badge {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.75rem;
-  color: var(--muted);
-  max-width: 180px;
+  font-weight: 500;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border: 1px solid transparent;
 }
 
-/* Увеличенный интервал в названии для легкого чтения плотного текста */
-.td-title {
-  line-height: 1.5;
-  color: var(--text);
-}
+.td-title { line-height: 1.5; color: var(--text); }
 
 .status-select { font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
 .status-target { border-color: var(--success); color: #34d399; background: rgba(16,185,129,0.1); }
@@ -93,3 +94,30 @@ tr.row-ignore:hover { background: rgba(239, 68, 68, 0.08); opacity: 0.9; }
   
 a.link { color: #60a5fa; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
 a.link:hover { text-decoration: underline; }
+
+/* Выпадающий список категорий в шапке */
+.th-dropdown-container { position: relative; }
+.category-dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border-radius: 8px;
+  padding: 12px;
+  z-index: 100;
+  min-width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
+  text-transform: none;
+  font-weight: normal;
+  color: var(--text);
+}
+.category-dropdown-content.show { display: block; }
+.dropdown-actions { display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.dropdown-link { color: #60a5fa; cursor: pointer; }
+.dropdown-link:hover { text-decoration: underline; }
+.category-checkbox-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.85rem; cursor: pointer; }
+.category-checkbox-item input { cursor: pointer; }

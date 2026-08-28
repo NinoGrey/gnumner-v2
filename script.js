@@ -11,13 +11,52 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let allTenders = [];
 let currentDateMode = 'all';
 
+// Состояние сортировки
+let currentSortColumn = 'publish_date';
+let currentSortDirection = 'desc'; // по умолчанию новые сверху
+
+// Выбранные категории для мультифильтра (пустой Set означает «все выбраны»)
+let selectedCategories = new Set();
+let availableCategoriesList = [];
+
+// Генератор стабильного цвета для каждой уникальной категории
+const categoryColorCache = {};
+function getCategoryBadgeStyle(categoryName) {
+  if (!categoryName) categoryName = 'Общее';
+  if (categoryColorCache[categoryName]) return categoryColorCache[categoryName];
+
+  // Хэш-функция для перевода строки в число
+  let hash = 0;
+  for (let i = 0; i < categoryName.length; i++) {
+    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  // Генерация мягкого пастельного цвета в HSL
+  const hue = Math.abs(hash) % 360;
+  const bgColor = `hsla(${hue}, 65%, 22%, 0.6)`;
+  const borderColor = `hsla(${hue}, 65%, 45%, 0.8)`;
+  const textColor = `hsl(${hue}, 80%, 75%)`;
+
+  const styleString = `background: ${bgColor}; border-color: ${borderColor}; color: ${textColor};`;
+  categoryColorCache[categoryName] = styleString;
+  return styleString;
+}
+
 // Инициализация при загрузке
 window.addEventListener('DOMContentLoaded', () => {
   setDateFilter('all');
   loadTenders();
+
+  // Закрытие выпадающего окна категорий при клике вне его
+  window.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('categoryDropdown');
+    if (dropdown && !e.target.closest('.th-dropdown-container')) {
+      dropdown.classList.remove('show');
+    }
+  });
 });
 
-// Полный обход системного лимита Supabase через постраничную выгрузку (Pagination Loop)
+// Полный обход системного лимита Supabase через постраничную выгрузку
 async function loadTenders() {
   const log = document.getElementById('statusLog');
   log.innerText = '⏳ Загрузка базы данных...';
@@ -49,10 +88,63 @@ async function loadTenders() {
     }
 
     allTenders = fetchedData;
+    initCategoriesFilterList();
     applyFilters();
   } catch (err) {
     log.innerText = '❌ Ошибка загрузки данных из Supabase: ' + err.message;
   }
+}
+
+// Инициализация списка чекбоксов категорий
+function initCategoriesFilterList() {
+  const catSet = new Set();
+  allTenders.forEach(item => {
+    catSet.add(item.category || 'Общее');
+  });
+  availableCategoriesList = Array.from(catSet).sort();
+
+  // Изначально выбираем все категории
+  selectedCategories = new Set(availableCategoriesList);
+
+  const container = document.getElementById('categoryCheckboxesList');
+  container.innerHTML = availableCategoriesList.map(cat => `
+    <label class="category-checkbox-item">
+      <input type="checkbox" value="${cat}" checked onchange="handleCategoryCheckboxChange(this)">
+      <span class="category-badge" style="${getCategoryBadgeStyle(cat)}">${cat}</span>
+    </label>
+  `).join('');
+}
+
+// Открытие/закрытие выпадающего списка категорий
+function toggleCategoryDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('categoryDropdown');
+  dropdown.classList.toggle('show');
+}
+
+// Обработка изменения чекбокса категории
+function handleCategoryCheckboxChange(checkbox) {
+  const cat = checkbox.value;
+  if (checkbox.checked) {
+    selectedCategories.add(cat);
+  } else {
+    selectedCategories.delete(cat);
+  }
+  applyFilters();
+}
+
+// Выбрать все / Сбросить в чекбоксах категорий
+function selectAllCategories(select) {
+  const checkboxes = document.querySelectorAll('#categoryCheckboxesList input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    cb.checked = select;
+    if (select) {
+      selectedCategories.add(cb.value);
+    } else {
+      selectedCategories.delete(cb.value);
+    }
+  });
+  applyFilters();
 }
 
 // Настройка фильтров по датам
@@ -68,8 +160,34 @@ function setDateFilter(mode) {
   applyFilters();
 }
 
-// Применение фильтров и динамический счетчик тендеров
+// Сортировка данных по клику на заголовок
+function sortData(column) {
+  if (currentSortColumn === column) {
+    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSortColumn = column;
+    currentSortDirection = 'asc'; // по умолчанию при смене колонки — по возрастанию
+  }
+  applyFilters();
+}
+
+// Обновление иконок сортировки в шапке
+function updateSortIcons() {
+  document.querySelectorAll('.sort-icon').forEach(icon => {
+    if (!icon.closest('th').classList.contains('th-dropdown-container')) {
+      icon.innerText = '↕';
+    }
+  });
+  const activeIcon = document.getElementById(`sort-${currentSortColumn}`);
+  if (activeIcon) {
+    activeIcon.innerText = currentSortDirection === 'asc' ? '▲' : '▼';
+  }
+}
+
+// Применение фильтров, поиска и сортировки
 function applyFilters() {
+  updateSortIcons();
+
   const search = document.getElementById('searchInput').value.toLowerCase();
   const statusVal = document.getElementById('statusFilter').value;
   const customDateVal = document.getElementById('customDate').value;
@@ -80,7 +198,7 @@ function applyFilters() {
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-  const filtered = allTenders.filter(item => {
+  let filtered = allTenders.filter(item => {
     // 1. Фильтр по дате
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
@@ -89,13 +207,28 @@ function applyFilters() {
     // 2. Фильтр по статусу
     if (statusVal !== 'all' && (item.user_status || 'unprocessed') !== statusVal) return false;
 
-    // 3. Поиск по тексту
+    // 3. Мультифильтр по выбранным категориям
+    const cat = item.category || 'Общее';
+    if (!selectedCategories.has(cat)) return false;
+
+    // 4. Поиск по тексту
     if (search) {
-      const text = `${item.title} ${item.category || ''}`.toLowerCase();
+      const text = `${item.title} ${cat}`.toLowerCase();
       if (!text.includes(search)) return false;
     }
 
     return true;
+  });
+
+  // 5. Сортировка отфильтрованного массива
+  filtered.sort((a, b) => {
+    let valA = a[currentSortColumn] || '';
+    let valB = b[currentSortColumn] || '';
+
+    // Если сортируем по датам или строкам
+    if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+    if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+    return 0;
   });
 
   // Динамический счетчик отображаемых тендеров
@@ -105,7 +238,7 @@ function applyFilters() {
   renderTable(filtered);
 }
 
-// Отрисовка таблицы с визуальной разметкой дедлайнов и категорий-тегов
+// Отрисовка таблицы
 function renderTable(data) {
   const tbody = document.getElementById('tendersBody');
   if (data.length === 0) {
@@ -117,12 +250,11 @@ function renderTable(data) {
   todayDate.setHours(0,0,0,0);
 
   tbody.innerHTML = data.map(item => {
-    // Логика подсветки статуса строки
     let rowClass = '';
     if (item.user_status === 'target') rowClass = 'row-target';
     if (item.user_status === 'ignore') rowClass = 'row-ignore';
 
-    // Обработка дедлайна
+    // Обработка дедлайна (без переноса строки)
     let deadlineHtml = '—';
     if (item.deadline_date) {
       const dDate = new Date(item.deadline_date);
@@ -138,11 +270,28 @@ function renderTable(data) {
       }
     }
 
+    const catName = item.category || 'Общее';
+    // Извлечение времени из created_at или publish_date (если в базе есть время)
+    let timeStr = '';
+    if (item.created_at) {
+      const timePart = item.created_at.split('T')[1];
+      if (timePart) {
+        timeStr = timePart.substring(0, 5); // ЧЧ:ММ
+      }
+    }
+
     return `
       <tr class="${rowClass}">
-        <td><span class="td-date-pub">${item.publish_date}</span></td>
+        <td>
+          <span class="td-date-pub">${item.publish_date}</span>
+          ${timeStr ? `<span class="td-time-pub">⏰ ${timeStr}</span>` : ''}
+        </td>
         <td class="td-date-deadline">${deadlineHtml}</td>
-        <td><span class="category-badge" title="${item.category || 'Общее'}">${item.category || 'Общее'}</span></td>
+        <td>
+          <span class="category-badge" style="${getCategoryBadgeStyle(catName)}" title="${catName}">
+            ${catName}
+          </span>
+        </td>
         <td class="td-title">${item.title}</td>
         <td>
           <select class="status-select ${item.user_status === 'target' ? 'status-target' : (item.user_status === 'ignore' ? 'status-ignore' : '')}" 
@@ -158,7 +307,7 @@ function renderTable(data) {
   }).join('');
 }
 
-// Изменение статуса тендера (Целевой / Нецелевой)
+// Изменение статуса тендера
 async function updateStatus(id, newStatus) {
   const { error } = await supabaseClient
     .from('tenders')
@@ -178,6 +327,7 @@ async function updateStatus(id, newStatus) {
 function exportToExcel() {
   const rows = allTenders.map(t => ({
     'Дата публикации': t.publish_date,
+    'Время': t.created_at ? t.created_at.split('T')[1]?.substring(0, 5) || '' : '',
     'Дата окончания': t.deadline_date || '',
     'Категория': t.category || '',
     'Наименование': t.title,
@@ -206,16 +356,16 @@ async function triggerParsing() {
   log.innerText = '🚀 Запуск парсера в GitHub Actions...';
 
   try {
-    const res = allTenders ? await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`, {
+    const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ ref: 'main' })
-    }) : null;
+    });
 
-    if (res && !res.ok) throw new Error('Ошибка запуска Actions.');
+    if (!res.ok) throw new Error('Ошибка запуска Actions.');
 
     log.innerText = '⚙️ Парсер запущен. Проверяем новые тендеры в Supabase каждые 5 секунд...';
     

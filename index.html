@@ -55,10 +55,24 @@
     <table>
       <thead>
         <tr>
-          <th>Публикация</th>
-          <th>Дедлайн</th>
-          <th>Категория</th>
-          <th>Наименование тендера</th>
+          <th onclick="sortData('publish_date')">Публикация <span id="sort-publish_date" class="sort-icon">↕</span></th>
+          <th onclick="sortData('deadline_date')">Дедлайн <span id="sort-deadline_date" class="sort-icon">↕</span></th>
+          <th class="th-dropdown-container">
+            <span onclick="toggleCategoryDropdown(event)" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+              Категория <span class="sort-icon">▼</span>
+            </span>
+            <!-- Выпадающий мультифильтр категорий -->
+            <div id="categoryDropdown" class="category-dropdown-content" onclick="event.stopPropagation()">
+              <div class="dropdown-actions">
+                <span onclick="selectAllCategories(true)" class="dropdown-link">Выбрать все</span>
+                <span onclick="selectAllCategories(false)" class="dropdown-link">Сбросить</span>
+              </div>
+              <div id="categoryCheckboxesList">
+                <!-- Динамически заполняется скриптом -->
+              </div>
+            </div>
+          </th>
+          <th onclick="sortData('title')">Наименование тендера <span id="sort-title" class="sort-icon">↕</span></th>
           <th>Статус</th>
           <th>Ссылка</th>
         </tr>
