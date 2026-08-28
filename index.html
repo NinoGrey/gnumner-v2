@@ -135,10 +135,11 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
   let allTenders = [];
-  let currentDateMode = 'today';
+  let currentDateMode = 'all';
 
   // Инициализация при загрузке
   window.addEventListener('DOMContentLoaded', () => {
+    setDateFilter('all'); // гарантирует сброс UI на "Все даты"
     loadTenders();
   });
 
