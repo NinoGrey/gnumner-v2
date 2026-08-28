@@ -105,7 +105,7 @@ function applyFilters() {
   renderTable(filtered);
 }
 
-// Отрисовка таблицы
+// Отрисовка таблицы с визуальной разметкой дедлайнов и категорий-тегов
 function renderTable(data) {
   const tbody = document.getElementById('tendersBody');
   if (data.length === 0) {
@@ -113,23 +113,49 @@ function renderTable(data) {
     return;
   }
 
-  tbody.innerHTML = data.map(item => `
-    <tr>
-      <td><b>${item.publish_date}</b></td>
-      <td>${item.deadline_date || '—'}</td>
-      <td><span style="font-size:0.8rem; color: var(--muted);">${item.category || 'Общее'}</span></td>
-      <td>${item.title}</td>
-      <td>
-        <select class="status-select ${item.user_status === 'target' ? 'status-target' : (item.user_status === 'ignore' ? 'status-ignore' : '')}" 
-                onchange="updateStatus('${item.id}', this.value)">
-          <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>⏳ Рассмотреть</option>
-          <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>🎯 Целевой</option>
-          <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>❌ Нецелевой</option>
-        </select>
-      </td>
-      <td><a href="${item.link}" target="_blank" class="link">Открыть ↗</a></td>
-    </tr>
-  `).join('');
+  const todayDate = new Date();
+  todayDate.setHours(0,0,0,0);
+
+  tbody.innerHTML = data.map(item => {
+    // Логика подсветки статуса строки
+    let rowClass = '';
+    if (item.user_status === 'target') rowClass = 'row-target';
+    if (item.user_status === 'ignore') rowClass = 'row-ignore';
+
+    // Обработка дедлайна
+    let deadlineHtml = '—';
+    if (item.deadline_date) {
+      const dDate = new Date(item.deadline_date);
+      dDate.setHours(0,0,0,0);
+      const diffDays = Math.ceil((dDate - todayDate) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) {
+        deadlineHtml = `<span class="deadline-expired" title="Просрочено">${item.deadline_date}</span>`;
+      } else if (diffDays <= 2) {
+        deadlineHtml = `<span class="deadline-soon" title="Горит! Осталось дней: ${diffDays}">⚠️ ${item.deadline_date}</span>`;
+      } else {
+        deadlineHtml = `<span>${item.deadline_date}</span>`;
+      }
+    }
+
+    return `
+      <tr class="${rowClass}">
+        <td><span class="td-date-pub">${item.publish_date}</span></td>
+        <td class="td-date-deadline">${deadlineHtml}</td>
+        <td><span class="category-badge" title="${item.category || 'Общее'}">${item.category || 'Общее'}</span></td>
+        <td class="td-title">${item.title}</td>
+        <td>
+          <select class="status-select ${item.user_status === 'target' ? 'status-target' : (item.user_status === 'ignore' ? 'status-ignore' : '')}" 
+                  onchange="updateStatus('${item.id}', this.value)">
+            <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>⏳ Рассмотреть</option>
+            <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>🎯 Целевой</option>
+            <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>❌ Нецелевой</option>
+          </select>
+        </td>
+        <td><a href="${item.link}" target="_blank" class="link">Открыть ↗</a></td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // Изменение статуса тендера (Целевой / Нецелевой)

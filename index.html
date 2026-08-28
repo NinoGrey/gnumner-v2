@@ -25,26 +25,30 @@
   <span id="statusLog">Готово к работе.</span>
 
   <div class="controls">
-    <!-- Быстрые вкладки по датам -->
-    <div class="tabs">
-      <button class="tab" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
-      <button class="tab" id="tabYesterday" onclick="setDateFilter('yesterday')">Вчера</button>
-      <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
+    <div class="controls-top">
+      <!-- Быстрые вкладки по датам -->
+      <div class="tabs">
+        <button class="tab" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
+        <button class="tab" id="tabYesterday" onclick="setDateFilter('yesterday')">Вчера</button>
+        <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
+      </div>
+
+      <!-- Выбор конкретной даты -->
+      <input type="date" id="customDate" onchange="setDateFilter('custom')">
+
+      <!-- Фильтр по пользовательскому статусу -->
+      <select id="statusFilter" onchange="applyFilters()">
+        <option value="all">Все статусы</option>
+        <option value="target">🎯 Только целевые</option>
+        <option value="ignore">❌ Нецелевые</option>
+        <option value="unprocessed">⏳ На рассмотрении</option>
+      </select>
     </div>
 
-    <!-- Выбор конкретной даты -->
-    <input type="date" id="customDate" onchange="setDateFilter('custom')">
-
-    <!-- Поиск по названию / номерам -->
-    <input type="text" id="searchInput" placeholder="Поиск по названию или категории..." oninput="applyFilters()">
-
-    <!-- Фильтр по пользовательскому статусу -->
-    <select id="statusFilter" onchange="applyFilters()">
-      <option value="all">Все статусы</option>
-      <option value="target">🎯 Только целевые</option>
-      <option value="ignore">❌ Нецелевые</option>
-      <option value="unprocessed">⏳ На рассмотрении</option>
-    </select>
+    <div class="controls-bottom">
+      <!-- Поиск по названию / номерам -->
+      <input type="text" id="searchInput" placeholder="Поиск по названию или категории..." oninput="applyFilters()">
+    </div>
   </div>
 
   <div class="table-container">
