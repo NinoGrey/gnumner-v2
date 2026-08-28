@@ -4,6 +4,7 @@ import time
 import hashlib
 import urllib3
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from bs4 import BeautifulSoup
 
@@ -12,7 +13,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BASE_URL = "https://gnumner.minfin.am"
 
-# Переменные окружения Supabase (из GitHub Secrets) + авто-исправление отсутствующего схемы https://
+# Переменные окружения Supabase + авто-исправление протокола https://
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
 
@@ -37,11 +38,10 @@ HEADERS = {
 }
 
 MAX_PAGES_PER_SECTION = 50
-DELAY_BETWEEN_PAGES = 1.5
+DELAY_BETWEEN_PAGES = 0.3  # Оптимизировано с 1.5s до 0.3s
 
 
 def generate_md5_id(link: str, pub_date: str) -> str:
-    """Генерирует уникальный ID записи на основе ссылки и даты."""
     raw = f"{link}_{pub_date}"
     return hashlib.md5(raw.encode('utf-8')).hexdigest()
 
@@ -58,9 +58,7 @@ def extract_dates(block) -> tuple[datetime | None, str | None, str | None]:
 
     raw_dates = re.findall(r'\b(\d{4}-\d{2}-\d{2})\b', text)
 
-    pub_dt = None
-    pub_iso = None
-    end_iso = None
+    pub_dt, pub_iso, end_iso = None, None, None
 
     if len(raw_dates) >= 1:
         try:
@@ -80,7 +78,6 @@ def extract_dates(block) -> tuple[datetime | None, str | None, str | None]:
 
 
 def get_latest_date_from_db(section_name: str) -> datetime | None:
-    """Запрашивает из Supabase самую последнюю дату публикации для конкретного раздела."""
     if not SUPABASE_URL or not SUPABASE_KEY:
         return None
 
@@ -97,21 +94,19 @@ def get_latest_date_from_db(section_name: str) -> datetime | None:
     }
 
     try:
-        response = requests.get(endpoint, headers=headers, params=params, timeout=15)
+        response = requests.get(endpoint, headers=headers, params=params, timeout=10)
         if response.status_code == 200:
             data = response.json()
             if data and len(data) > 0 and data[0].get("publish_date"):
-                # Обрезаем первые 10 символов на случай возврата формата timestamp ISO (YYYY-MM-DDT...)
                 last_date_str = str(data[0]["publish_date"])[:10]
                 return datetime.strptime(last_date_str, "%Y-%m-%d")
     except Exception as e:
-        print(f"⚠️ Не удалось получить последнюю дату из БД для «{section_name}»: {e}")
+        print(f"⚠️ Ошибка запроса последней даты для «{section_name}»: {e}")
 
     return None
 
 
 def push_to_supabase(tenders: list) -> int:
-    """Отправляет батч тендеров в Supabase REST API с игнорированием дубликатов."""
     if not tenders or not SUPABASE_URL or not SUPABASE_KEY:
         return 0
 
@@ -124,9 +119,9 @@ def push_to_supabase(tenders: list) -> int:
     }
 
     try:
-        response = requests.post(endpoint, json=tenders, headers=headers, timeout=30)
+        response = requests.post(endpoint, json=tenders, headers=headers, timeout=20)
         if response.status_code in [200, 201]:
-            print(f"💾 Успешно отправлено в базу: {len(tenders)} тендеров.")
+            print(f"💾 Записано в Supabase: {len(tenders)} шт.")
             return len(tenders)
         else:
             print(f"❌ Ошибка Supabase API ({response.status_code}): {response.text}")
@@ -136,54 +131,42 @@ def push_to_supabase(tenders: list) -> int:
         return 0
 
 
-def fetch_with_retries(session: requests.Session, url: str, retries: int = 3) -> requests.Response | None:
+def fetch_with_retries(session: requests.Session, url: str, retries: int = 2) -> requests.Response | None:
     for attempt in range(1, retries + 1):
         try:
-            response = session.get(url, headers=HEADERS, timeout=20, verify=False)
+            response = session.get(url, headers=HEADERS, timeout=(3.05, 10), verify=False)
             if response.status_code == 404:
                 return None
             response.raise_for_status()
             response.encoding = 'utf-8'
             return response
-        except Exception as e:
-            print(f"⚠️ [Попытка {attempt}/{retries}] Сбой запроса: {e}")
+        except Exception:
             if attempt < retries:
-                time.sleep(2 * attempt)
+                time.sleep(1)
     return None
 
 
-def parse_section(section: dict, session: requests.Session, collected_tenders: list):
+def parse_section(section: dict) -> list[dict]:
+    session = requests.Session()
     section_name = section["name"]
     start_url = section["url"]
+    section_tenders = []
 
-    print(f"\n📂 === Раздел: {section_name} ===")
-    
-    # 1. Запрашиваем из Supabase последнюю дату для ЭТОГО раздела
     latest_db_dt = get_latest_date_from_db(section_name)
-    if latest_db_dt:
-        print(f"📌 Последняя запись в БД для раздела: {latest_db_dt.strftime('%Y-%m-%d')}")
-    else:
-        print("📌 В БД нет записей для этого раздела (сканируем с нуля).")
 
     page = 1
-    added_in_section = 0
-
     while page <= MAX_PAGES_PER_SECTION:
         url = start_url if page == 1 else f"{start_url.rstrip('/')}/{page}"
-        print(f"📡 [Стр. {page}] Загрузка: {url}")
-
         response = fetch_with_retries(session, url)
         if not response:
             break
 
         soup = BeautifulSoup(response.text, 'html.parser')
-
         tender_blocks = soup.find_all('div', class_='tender')
         if not tender_blocks:
             tender_blocks = soup.find_all('tr', class_=re.compile(r'(even|odd)'))
 
         if not tender_blocks:
-            print("🏁 Блоки тендеров не найдены. Конец раздела.")
             break
 
         added_on_page = 0
@@ -203,34 +186,29 @@ def parse_section(section: dict, session: requests.Session, collected_tenders: l
 
             pub_dt, pub_iso, end_iso = extract_dates(block)
 
-            # 2. Остановка парсинга: если дата тендера строго МЕНЬШЕ даты последней записи в базе
+            # Ранний выход: если встретили запись старше последней в БД
             if latest_db_dt and pub_dt and pub_dt < latest_db_dt:
-                print(f"⏹ ОСТАНОВКА РАЗДЕЛА: Тендер от {pub_iso} старше даты в базе ({latest_db_dt.strftime('%Y-%m-%d')}).")
                 stop_section = True
                 break
 
             if not pub_iso:
                 continue
 
-            # Убираем теги из названия, но сохраняем категории
             cat_match = re.search(r'\[(.*?)\]', title)
             if cat_match:
                 title = title.replace(cat_match.group(0), "").strip()
 
             tender_id = generate_md5_id(full_url, pub_iso)
 
-            collected_tenders.append({
+            section_tenders.append({
                 "id": tender_id,
                 "title": title,
-                "category": section_name, # Привязываем к названию раздела для точной фильтрации
+                "category": section_name,
                 "publish_date": pub_iso,
                 "deadline_date": end_iso,
                 "link": full_url
             })
             added_on_page += 1
-            added_in_section += 1
-
-        print(f"  └ Новых записей на странице: {added_on_page}")
 
         if stop_section or added_on_page == 0:
             break
@@ -238,18 +216,27 @@ def parse_section(section: dict, session: requests.Session, collected_tenders: l
         page += 1
         time.sleep(DELAY_BETWEEN_PAGES)
 
-    print(f"✅ Раздел «{section_name}» обработан. Найдено записей: {added_in_section}.")
+    print(f"✅ Раздел «{section_name}» готов (найдено новых: {len(section_tenders)})")
+    return section_tenders
 
 
 def main():
-    print("🚀 Старт инкрементального парсинга по разделам...")
-    session = requests.Session()
+    start_time = time.time()
+    print("🚀 Старт параллельного инкрементального парсинга...")
     all_tenders = []
 
-    for section in SECTIONS:
-        parse_section(section, session, all_tenders)
+    # Запускаем обработку 9 разделов параллельно в 5 потоков
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(parse_section, sec) for sec in SECTIONS]
+        for future in as_completed(futures):
+            try:
+                tenders = future.result()
+                all_tenders.extend(tenders)
+            except Exception as e:
+                print(f"❌ Ошибка в потоке: {e}")
 
-    print(f"\n📊 Всего новых тендеров к отправке: {len(all_tenders)}")
+    elapsed = round(time.time() - start_time, 2)
+    print(f"\n📊 Все разделы сгружены за {elapsed} сек. Найдено новых тендеров: {len(all_tenders)}")
 
     if all_tenders:
         batch_size = 100
@@ -258,7 +245,7 @@ def main():
             batch = all_tenders[i:i + batch_size]
             total_pushed += push_to_supabase(batch)
 
-        print(f"✨ Синхронизация завершена! Добавлено/обновлено: {total_pushed}")
+        print(f"✨ Синхронизация завершена! Добавлено: {total_pushed}")
     else:
         print("ℹ️ Новых тендеров во всех разделах не обнаружено.")
 
