@@ -1,14 +1,14 @@
 name: Gnumner All Tenders Collector
 
 on:
-  workflow_dispatch: # Ручной запуск из вкладки Actions
-  repository_dispatch: # Запуск по API при клике на кнопку «Обновить базу»
+  workflow_dispatch:
+  repository_dispatch:
     types: [update-database]
   # schedule:
-  #   - cron: '0 */3 * * *' # Пример: запуск каждые 3 часа
+  #   - cron: '0 */3 * * *'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   run-tracker:
@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Клонирование репозитория
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Настройка Python и uv
         uses: astral-sh/setup-uv@v5
@@ -27,19 +25,10 @@ jobs:
           enable-cache: true
 
       - name: Установка зависимостей
-        run: uv pip install --system -r requirements.txt
+        run: uv pip install -r requirements.txt
 
       - name: Сбор всех тендеров
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: python parser.py # Проверьте имя файла: parser.py или main.py
-
-      - name: Сохранение обновленной базы и логов
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git pull origin main --rebase || true
-          git add data.json log.json || true
-          git commit -m "Update tenders list and logs" || exit 0
-          git push
+        run: python parser.py
