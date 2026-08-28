@@ -1,0 +1,30 @@
+name: Gnumner Incremental Scraper
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Запуск каждые 30 минут
+  workflow_dispatch:        # Разрешает ручной запуск (через API сайта и интерфейс GitHub)
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Проверка кода репозитория
+        uses: actions/checkout@v4
+
+      - name: Настройка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Установка библиотек
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
+      - name: Запуск парсера
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python parser.py
