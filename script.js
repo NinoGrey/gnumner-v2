@@ -225,7 +225,6 @@ function applyFilters() {
     let valA = a[currentSortColumn] || '';
     let valB = b[currentSortColumn] || '';
 
-    // Если сортируем по датам или строкам
     if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
     if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -254,29 +253,34 @@ function renderTable(data) {
     if (item.user_status === 'target') rowClass = 'row-target';
     if (item.user_status === 'ignore') rowClass = 'row-ignore';
 
-    // Обработка дедлайна (без переноса строки)
+    // Обработка дедлайна с учетом времени завершения
     let deadlineHtml = '—';
     if (item.deadline_date) {
       const dDate = new Date(item.deadline_date);
       dDate.setHours(0,0,0,0);
       const diffDays = Math.ceil((dDate - todayDate) / (1000 * 60 * 60 * 24));
       
+      const deadlineTimePart = item.deadline_time ? ` <span style="font-size:0.75rem; opacity:0.8;">${item.deadline_time}</span>` : '';
+
       if (diffDays < 0) {
-        deadlineHtml = `<span class="deadline-expired" title="Просрочено">${item.deadline_date}</span>`;
+        deadlineHtml = `<span class="deadline-expired" title="Просрочено">${item.deadline_date}${deadlineTimePart}</span>`;
       } else if (diffDays <= 2) {
-        deadlineHtml = `<span class="deadline-soon" title="Горит! Осталось дней: ${diffDays}">⚠️ ${item.deadline_date}</span>`;
+        deadlineHtml = `<span class="deadline-soon" title="Горит! Осталось дней: ${diffDays}">⚠️ ${item.deadline_date}${deadlineTimePart}</span>`;
       } else {
-        deadlineHtml = `<span>${item.deadline_date}</span>`;
+        deadlineHtml = `<span>${item.deadline_date}${deadlineTimePart}</span>`;
       }
     }
 
     const catName = item.category || 'Общее';
-    // Извлечение времени из created_at или publish_date (если в базе есть время)
+    
+    // Время публикации берется из поля publish_time (поддерживается fallback на created_at)
     let timeStr = '';
-    if (item.created_at) {
+    if (item.publish_time) {
+      timeStr = item.publish_time;
+    } else if (item.created_at) {
       const timePart = item.created_at.split('T')[1];
       if (timePart) {
-        timeStr = timePart.substring(0, 5); // ЧЧ:ММ
+        timeStr = timePart.substring(0, 5);
       }
     }
 
@@ -323,12 +327,13 @@ async function updateStatus(id, newStatus) {
   }
 }
 
-// Выгрузка в Excel с учетом фильтров
+// Выгрузка в Excel с учетом времени публикации и дедлайна
 function exportToExcel() {
   const rows = allTenders.map(t => ({
     'Дата публикации': t.publish_date,
-    'Время': t.created_at ? t.created_at.split('T')[1]?.substring(0, 5) || '' : '',
+    'Время публикации': t.publish_time || (t.created_at ? t.created_at.split('T')[1]?.substring(0, 5) || '' : ''),
     'Дата окончания': t.deadline_date || '',
+    'Время окончания': t.deadline_time || '',
     'Категория': t.category || '',
     'Наименование': t.title,
     'Статус': t.user_status === 'target' ? 'Целевой' : (t.user_status === 'ignore' ? 'Нецелевой' : 'На рассмотрении'),

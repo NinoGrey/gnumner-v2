@@ -38,7 +38,7 @@ HEADERS = {
 }
 
 MAX_PAGES_PER_SECTION = 50
-DELAY_BETWEEN_PAGES = 0.3  # Оптимизировано с 1.5s до 0.3s
+DELAY_BETWEEN_PAGES = 0.3
 
 
 def generate_md5_id(link: str, pub_date: str) -> str:
@@ -52,29 +52,35 @@ def clean_text(text: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 
-def extract_dates(block) -> tuple[datetime | None, str | None, str | None]:
+def extract_dates_and_times(block) -> tuple[str | None, str | None, str | None, str | None]:
+    """
+    Извлекает даты и время публикации/завершения из блока тендера.
+    Возвращает: (pub_date, pub_time, end_date, end_time)
+    """
     time_elem = block.find('p', class_='tender_time')
     text = time_elem.get_text() if time_elem else block.get_text()
 
-    raw_dates = re.findall(r'\b(\d{4}-\d{2}-\d{2})\b', text)
+    # Ищем все совпадения формата YYYY-MM-DD и опционально HH:MM рядом
+    datetime_matches = re.findall(r'(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?', text)
 
-    pub_dt, pub_iso, end_iso = None, None, None
+    pub_date, pub_time = None, None
+    end_date, end_time = None, None
 
-    if len(raw_dates) >= 1:
-        try:
-            pub_dt = datetime.strptime(raw_dates[0], "%Y-%m-%d")
-            pub_iso = raw_dates[0]
-        except ValueError:
-            pub_dt = None
+    if len(datetime_matches) >= 1:
+        pub_date = datetime_matches[0][0]
+        pub_time = datetime_matches[0][1] if datetime_matches[0][1] else None
 
-    if len(raw_dates) >= 2:
-        try:
-            datetime.strptime(raw_dates[1], "%Y-%m-%d")
-            end_iso = raw_dates[1]
-        except ValueError:
-            end_iso = None
+    if len(datetime_matches) >= 2:
+        end_date = datetime_matches[1][0]
+        end_time = datetime_matches[1][1] if datetime_matches[1][1] else None
 
-    return pub_dt, pub_iso, end_iso
+    # Дополнительный поиск времени, если оно записано в другом месте блока
+    if not pub_time:
+        time_match = re.search(r'(\d{2}:\d{2})', text)
+        if time_match:
+            pub_time = time_match.group(1)
+
+    return pub_date, pub_time, end_date, end_time
 
 
 def get_latest_date_from_db(section_name: str) -> datetime | None:
@@ -184,9 +190,10 @@ def parse_section(section: dict) -> list[dict]:
             if not title or len(title) < 3:
                 continue
 
-            pub_dt, pub_iso, end_iso = extract_dates(block)
+            pub_iso, pub_time, end_iso, end_time = extract_dates_and_times(block)
 
             # Ранний выход: если встретили запись старше последней в БД
+            pub_dt = datetime.strptime(pub_iso, "%Y-%m-%d") if pub_iso else None
             if latest_db_dt and pub_dt and pub_dt < latest_db_dt:
                 stop_section = True
                 break
@@ -205,7 +212,9 @@ def parse_section(section: dict) -> list[dict]:
                 "title": title,
                 "category": section_name,
                 "publish_date": pub_iso,
+                "publish_time": pub_time,
                 "deadline_date": end_iso,
+                "deadline_time": end_time,
                 "link": full_url
             })
             added_on_page += 1
@@ -225,7 +234,6 @@ def main():
     print("🚀 Старт параллельного инкрементального парсинга...")
     all_tenders = []
 
-    # Запускаем обработку 9 разделов параллельно в 5 потоков
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [executor.submit(parse_section, sec) for sec in SECTIONS]
         for future in as_completed(futures):
