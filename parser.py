@@ -12,9 +12,12 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 BASE_URL = "https://gnumner.minfin.am"
 
-# Переменные окружения Supabase (из GitHub Secrets)
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+# Переменные окружения Supabase (из GitHub Secrets) + авто-исправление отсутствующего схемы https://
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
+
+if SUPABASE_URL and not SUPABASE_URL.startswith(("http://", "https://")):
+    SUPABASE_URL = f"https://{SUPABASE_URL}"
 
 SECTIONS = [
     {"name": "Էլեկտրոնային աճուրդ", "url": f"{BASE_URL}/hy/page/elektronayin_achurdi_haytararutyun_ev_hraver"},
@@ -98,7 +101,8 @@ def get_latest_date_from_db(section_name: str) -> datetime | None:
         if response.status_code == 200:
             data = response.json()
             if data and len(data) > 0 and data[0].get("publish_date"):
-                last_date_str = data[0]["publish_date"]
+                # Обрезаем первые 10 символов на случай возврата формата timestamp ISO (YYYY-MM-DDT...)
+                last_date_str = str(data[0]["publish_date"])[:10]
                 return datetime.strptime(last_date_str, "%Y-%m-%d")
     except Exception as e:
         print(f"⚠️ Не удалось получить последнюю дату из БД для «{section_name}»: {e}")
