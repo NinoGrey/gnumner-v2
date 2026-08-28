@@ -1,0 +1,57 @@
+:root {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --border: #334155;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #10b981;
+  --danger: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+body { background: var(--bg); color: var(--text); padding: 20px; }
+.container { max-width: 1300px; margin: 0 auto; }
+
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px; }
+h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+
+.btn {
+  background: var(--primary); color: #fff; border: none; padding: 10px 18px;
+  border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem;
+}
+.btn:hover { background: var(--primary-hover); }
+.btn-excel { background: var(--success); }
+.btn-excel:hover { background: #059669; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Панель фильтров */
+.controls { background: var(--card-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.tabs { display: flex; background: var(--bg); padding: 4px; border-radius: 8px; border: 1px solid var(--border); }
+.tab { padding: 6px 14px; border: none; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.85rem; }
+.tab.active { background: var(--primary); color: #fff; }
+
+input, select {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; outline: none;
+}
+input[type="text"] { flex-grow: 1; min-width: 200px; }
+
+/* Лог и статус */
+#statusLog { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; display: block; font-family: monospace; }
+
+/* Таблица */
+.table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left; }
+th, td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+th { background: rgba(0,0,0,0.2); color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+tr:hover { background: rgba(255,255,255,0.02); }
+
+.status-select { font-size: 0.8rem; padding: 4px 8px; }
+.status-target { border-color: var(--success); color: #34d399; }
+.status-ignore { border-color: var(--danger); color: #f87171; }
+
+a.link { color: #60a5fa; text-decoration: none; }
+a.link:hover { text-decoration: underline; }
