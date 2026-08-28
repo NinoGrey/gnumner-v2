@@ -1,30 +1,45 @@
-name: Gnumner Incremental Scraper
+name: Gnumner All Tenders Collector
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'  # Запуск каждые 30 минут
-  workflow_dispatch:        # Разрешает ручной запуск (через API сайта и интерфейс GitHub)
+  workflow_dispatch: # Ручной запуск из вкладки Actions
+  repository_dispatch: # Запуск по API при клике на кнопку «Обновить базу»
+    types: [update-database]
+  # schedule:
+  #   - cron: '0 */3 * * *' # Пример: запуск каждые 3 часа
+
+permissions:
+  contents: write
 
 jobs:
-  scrape:
+  run-tracker:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Проверка кода репозитория
+      - name: Клонирование репозитория
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
-      - name: Настройка Python
-        uses: actions/setup-python@v5
+      - name: Настройка Python и uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: '3.11'
+          enable-cache: true
 
-      - name: Установка библиотек
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+      - name: Установка зависимостей
+        run: uv pip install --system -r requirements.txt
 
-      - name: Запуск парсера
+      - name: Сбор всех тендеров
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: python parser.py
+        run: python parser.py # Проверьте имя файла: parser.py или main.py
+
+      - name: Сохранение обновленной базы и логов
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git pull origin main --rebase || true
+          git add data.json log.json || true
+          git commit -m "Update tenders list and logs" || exit 0
+          git push
