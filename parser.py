@@ -37,7 +37,7 @@ HEADERS = {
     "Accept-Language": "hy,en-US;q=0.9,en;q=0.8,ru;q=0.7",
 }
 
-MAX_PAGES_PER_SECTION = 50
+MAX_PAGES_PER_SECTION = 1000
 DELAY_BETWEEN_PAGES = 0.3
 
 
@@ -121,7 +121,7 @@ def push_to_supabase(tenders: list) -> int:
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json",
-        "Prefer": "resolution=ignore-duplicates"
+        "Prefer": "resolution=merge-duplicates"
     }
 
     try:
@@ -194,9 +194,9 @@ def parse_section(section: dict) -> list[dict]:
 
             # Ранний выход: если встретили запись старше последней в БД
             pub_dt = datetime.strptime(pub_iso, "%Y-%m-%d") if pub_iso else None
-            if latest_db_dt and pub_dt and pub_dt < latest_db_dt:
-                stop_section = True
-                break
+            # if latest_db_dt and pub_dt and pub_dt < latest_db_dt:
+            #     stop_section = True
+            #     break
 
             if not pub_iso:
                 continue
