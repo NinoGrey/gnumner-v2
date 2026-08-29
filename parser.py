@@ -54,14 +54,14 @@ def clean_text(text: str) -> str:
 
 def extract_dates_and_times(block) -> tuple[str | None, str | None, str | None, str | None]:
     """
-    Извлекает даты и время публикации/завершения из блока тендера.
+    Извлекает даты и время публикации/завершения (с учетом секунд) из блока тендера.
     Возвращает: (pub_date, pub_time, end_date, end_time)
     """
     time_elem = block.find('p', class_='tender_time')
     text = time_elem.get_text() if time_elem else block.get_text()
 
-    # Ищем все совпадения формата YYYY-MM-DD и опционально HH:MM рядом
-    datetime_matches = re.findall(r'(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?', text)
+    # Ищем все совпадения формата YYYY-MM-DD и опционально HH:MM:SS (или HH:MM)
+    datetime_matches = re.findall(r'(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}(?::\d{2})?))?', text)
 
     pub_date, pub_time = None, None
     end_date, end_time = None, None
@@ -74,9 +74,9 @@ def extract_dates_and_times(block) -> tuple[str | None, str | None, str | None, 
         end_date = datetime_matches[1][0]
         end_time = datetime_matches[1][1] if datetime_matches[1][1] else None
 
-    # Дополнительный поиск времени, если оно записано в другом месте блока
+    # Дополнительный поиск времени с секундами, если оно записано отдельно
     if not pub_time:
-        time_match = re.search(r'(\d{2}:\d{2})', text)
+        time_match = re.search(r'(\d{2}:\d{2}(?::\d{2})?)', text)
         if time_match:
             pub_time = time_match.group(1)
 
