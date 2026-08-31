@@ -35,6 +35,29 @@ const CATEGORY_PALETTE = {
   'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(161, 98, 7, 0.4)', border: '#eab308', color: '#fef08a' },
   'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(67, 56, 202, 0.4)', border: '#6366f1', color: '#c7d2fe' }
 };
+// ====== КЛЮЧЕВЫЕ СЛОВА ДЛЯ ПОДСВЕТКИ ======
+const GREEN_KEYWORDS = ['համազգեստ']; // слова для зеленой подсветки
+const RED_KEYWORDS = ['ԿԱՀՈՒՅՔ', 'ծառայություն', 'ՕԴՈՐԱԿԻՉ', 'ՀԱՄԱԿԱՐԳԻՉ','ՀԱՄԱԿԱՐԳՉԱՅԻՆ', 'պլանշետներ', 'վերկառուցուման','կենցաղային', 'աշխատանք', 'տեխնիկա', 'լուծում','կազմակերպման', 'բարեկարգման','սարքավորում','էլեկտրական','մեքենա', 'շինարարական', 'շինարար','Դեղորայք','պատվաստանյութ', 'ԿԱՆԱՉԱՊԱՏ','բարեկարգման','Համակարգիչ','վառելիք', 'քարթիրջներ', 'համակարգ','սարքերի', 'պահեստամասեր','ավտոմեքենա', 'լաբորատոր', 'պարագաներ', 'միջոցառում', 'փորձաքննութ', 'փաստաթղթեր']; // слова для красной подсветки
+
+function highlightKeywords(titleText) {
+  if (!titleText) return '';
+  
+  let formattedText = titleText;
+
+  // Функция для безопасной замены слов без учета регистра
+  const replaceWords = (text, words, colorClass) => {
+    words.forEach(word => {
+      if (!word.trim()) return;
+      const regex = new RegExp(`(${word.trim()})`, 'gi');
+      formattedText = formattedText.replace(regex, `<span class="keyword-${colorClass}">$1</span>`);
+    });
+  };
+
+  replaceWords(formattedText, GREEN_KEYWORDS, 'green');
+  replaceWords(formattedText, RED_KEYWORDS, 'red');
+
+  return formattedText;
+}
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
 window.addEventListener('DOMContentLoaded', () => {
@@ -339,7 +362,7 @@ function renderTable(data) {
             ${catName}
           </span>
         </td>
-        <td class="td-title">${item.title}</td>
+        <td class="td-title">${highlightKeywords(item.title)}</td>
         <td>
           <div class="status-segmented-control">
             <button class="status-seg-btn seg-ignore ${currentStatus === 'ignore' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'ignore', this)" title="Нецелевой">

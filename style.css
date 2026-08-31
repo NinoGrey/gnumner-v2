@@ -307,3 +307,19 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
   opacity: 0.7;
   cursor: pointer;
 }
+
+.keyword-green {
+  background-color: rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.keyword-red {
+  background-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 500;
+}
