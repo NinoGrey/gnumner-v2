@@ -137,7 +137,7 @@ function selectAllCategories(select) {
   applyFilters();
 }
 
-// Логика переключения быстрых дат (включая «Позавчера»)
+// Быстрые фильтры даты (сбрасывают ручные диапазоны при желании, либо работают вместе)
 function setDateFilter(mode) {
   currentDateMode = mode;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -146,9 +146,24 @@ function setDateFilter(mode) {
   if (mode === 'yesterday') document.getElementById('tabYesterday').classList.add('active');
   if (mode === 'dayBefore') document.getElementById('tabDayBefore').classList.add('active');
   if (mode === 'all') document.getElementById('tabAll').classList.add('active');
-  if (mode !== 'custom') document.getElementById('customDate').value = '';
+  
+  if (mode !== 'all') {
+    // Очищаем ручные фильтры публикации при выборе быстрых пресетов
+    const pubFrom = document.getElementById('pubDateFrom');
+    const pubTo = document.getElementById('pubDateTo');
+    if (pubFrom) pubFrom.value = '';
+    if (pubTo) pubTo.value = '';
+  }
 
   applyFilters();
+}
+
+function clearDateFilters() {
+  document.getElementById('pubDateFrom').value = '';
+  document.getElementById('pubDateTo').value = '';
+  document.getElementById('deadlineDateFrom').value = '';
+  document.getElementById('deadlineDateTo').value = '';
+  setDateFilter('all');
 }
 
 function sortData(column) {
@@ -177,13 +192,20 @@ function updateSortIcons() {
   }
 }
 
-// ====== ФИЛЬТРЫ И СОРТИРОВКА ======
+// ====== ПРИМЕНЕНИЕ ФИЛЬТРОВ ======
 function applyFilters() {
   updateSortIcons();
 
   const search = document.getElementById('searchInput').value.toLowerCase();
   const statusVal = document.getElementById('statusFilter').value;
-  const customDateVal = document.getElementById('customDate').value;
+
+  // Значения диапазона дат публикации
+  const pubFrom = document.getElementById('pubDateFrom')?.value || '';
+  const pubTo = document.getElementById('pubDateTo')?.value || '';
+
+  // Значения диапазона дат дедлайна
+  const dlFrom = document.getElementById('deadlineDateFrom')?.value || '';
+  const dlTo = document.getElementById('deadlineDateTo')?.value || '';
 
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
@@ -197,16 +219,31 @@ function applyFilters() {
   const dayBeforeStr = dayBefore.toISOString().split('T')[0];
 
   filteredTenders = allTenders.filter(item => {
+    // 1. Быстрые фильтры по дате публикации (если активны)
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
     if (currentDateMode === 'dayBefore' && item.publish_date !== dayBeforeStr) return false;
-    if (currentDateMode === 'custom' && customDateVal && item.publish_date !== customDateVal) return false;
 
+    // 2. Ручной диапазон даты публикации (С - По)
+    if (pubFrom && item.publish_date < pubFrom) return false;
+    if (pubTo && item.publish_date > pubTo) return false;
+
+    // 3. Ручной диапазон даты завершения / дедлайна (С - По)
+    if (dlFrom) {
+      if (!item.deadline_date || item.deadline_date < dlFrom) return false;
+    }
+    if (dlTo) {
+      if (!item.deadline_date || item.deadline_date > dlTo) return false;
+    }
+
+    // 4. Фильтр по статусу
     if (statusVal !== 'all' && (item.user_status || 'unprocessed') !== statusVal) return false;
 
+    // 5. Фильтр по категориям
     const cat = item.category || 'Общее';
     if (!selectedCategories.has(cat)) return false;
 
+    // 6. Текстовый поиск
     if (search) {
       const text = `${item.title} ${cat}`.toLowerCase();
       if (!text.includes(search)) return false;
@@ -239,7 +276,7 @@ function applyFilters() {
   renderCurrentPage();
 }
 
-// ====== РЕНДЕР ТАБЛИЦЫ И ДВОЙНОЙ ПАГИНАЦИИ ======
+// ====== РЕНДЕР ТАБЛИЦЫ И ПАГИНАЦИЯ ======
 function renderCurrentPage() {
   const totalPages = Math.ceil(filteredTenders.length / PAGE_SIZE) || 1;
   if (currentPage > totalPages) currentPage = totalPages;
@@ -420,14 +457,12 @@ async function updateStatus(id, newStatus, btnElement) {
   const target = allTenders.find(x => x.id === id);
   if (target) target.user_status = newStatus;
 
-  // Если активен фильтр по статусу и статус сменился на другой, строка должна скрыться
   const statusFilterVal = document.getElementById('statusFilter').value;
   if (statusFilterVal !== 'all' && statusFilterVal !== newStatus) {
     applyFilters();
     return;
   }
 
-  // Локальное обновление DOM без перерисовки всей таблицы (спасает от скачков и сброса Google Translate)
   if (btnElement) {
     const tr = btnElement.closest('tr');
     if (tr) {
