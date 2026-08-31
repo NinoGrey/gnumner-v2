@@ -54,7 +54,7 @@ def clean_text(text: str) -> str:
 
 def extract_dates_and_times(block) -> tuple[str | None, str | None, str | None, str | None]:
     """
-    Извлекает даты и время публикации/завершения (с учетом секунд) из блока тендера.
+    Извлекает даты и время публикации/завершения из блока тендера.
     Возвращает: (pub_date, pub_time, end_date, end_time)
     """
     time_elem = block.find('p', class_='tender_time')
@@ -79,6 +79,12 @@ def extract_dates_and_times(block) -> tuple[str | None, str | None, str | None, 
         time_match = re.search(r'(\d{2}:\d{2}(?::\d{2})?)', text)
         if time_match:
             pub_time = time_match.group(1)
+
+    # Нормализация нулевых дат
+    if pub_date == "0000-00-00":
+        pub_date = None
+    if end_date == "0000-00-00":
+        end_date = None
 
     return pub_date, pub_time, end_date, end_time
 
@@ -127,7 +133,7 @@ def push_to_supabase(tenders: list) -> int:
     try:
         response = requests.post(endpoint, json=tenders, headers=headers, timeout=20)
         if response.status_code in [200, 201]:
-            print(f"💾 Записано в Supabase: {len(tenders)} шт.")
+            print(f"💾 Успешно обработано в Supabase: {len(tenders)} шт.")
             return len(tenders)
         else:
             print(f"❌ Ошибка Supabase API ({response.status_code}): {response.text}")
@@ -158,8 +164,6 @@ def parse_section(section: dict) -> list[dict]:
     start_url = section["url"]
     section_tenders = []
 
-    latest_db_dt = get_latest_date_from_db(section_name)
-
     page = 1
     while page <= MAX_PAGES_PER_SECTION:
         url = start_url if page == 1 else f"{start_url.rstrip('/')}/{page}"
@@ -176,7 +180,6 @@ def parse_section(section: dict) -> list[dict]:
             break
 
         added_on_page = 0
-        stop_section = False
 
         for block in tender_blocks:
             link_elem = block.find('a', href=True)
@@ -192,12 +195,7 @@ def parse_section(section: dict) -> list[dict]:
 
             pub_iso, pub_time, end_iso, end_time = extract_dates_and_times(block)
 
-            # Ранний выход: если встретили запись старше последней в БД
-            pub_dt = datetime.strptime(pub_iso, "%Y-%m-%d") if pub_iso else None
-            # if latest_db_dt and pub_dt and pub_dt < latest_db_dt:
-            #     stop_section = True
-            #     break
-
+            # Игнорируем записи без корректной даты публикации
             if not pub_iso:
                 continue
 
@@ -219,19 +217,19 @@ def parse_section(section: dict) -> list[dict]:
             })
             added_on_page += 1
 
-        if stop_section or added_on_page == 0:
+        if added_on_page == 0:
             break
 
         page += 1
         time.sleep(DELAY_BETWEEN_PAGES)
 
-    print(f"✅ Раздел «{section_name}» готов (найдено новых: {len(section_tenders)})")
+    print(f"✅ Раздел «{section_name}» готов (найдено для обновления/добавления: {len(section_tenders)})")
     return section_tenders
 
 
 def main():
     start_time = time.time()
-    print("🚀 Старт параллельного инкрементального парсинга...")
+    print("🚀 Старт полного обновления тендеров в Supabase...")
     all_tenders = []
 
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -244,18 +242,22 @@ def main():
                 print(f"❌ Ошибка в потоке: {e}")
 
     elapsed = round(time.time() - start_time, 2)
-    print(f"\n📊 Все разделы сгружены за {elapsed} сек. Найдено новых тендеров: {len(all_tenders)}")
+    print(f"\n📊 Все разделы сгружены за {elapsed} сек. Обработано записей: {len(all_tenders)}")
 
     if all_tenders:
         batch_size = 100
         total_pushed = 0
         for i in range(0, len(all_tenders), batch_size):
             batch = all_tenders[i:i + batch_size]
-            total_pushed += push_to_supabase(batch)
 
-        print(f"✨ Синхронизация завершена! Добавлено: {total_pushed}")
+            # Удаляем дубликаты по 'id' внутри одного батча перед отправкой
+            unique_batch = list({item["id"]: item for item in batch}.values())
+
+            total_pushed += push_to_supabase(unique_batch)
+
+        print(f"✨ Синхронизация завершена! Обновлено/добавлено записей: {total_pushed}")
     else:
-        print("ℹ️ Новых тендеров во всех разделах не обнаружено.")
+        print("ℹ️ Тендеров для обработки не найдено.")
 
 
 if __name__ == "__main__":
