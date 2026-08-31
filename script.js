@@ -306,7 +306,7 @@ function renderTable(data) {
         <td class="td-title">${item.title}</td>
         <td>
           <div class="status-select-wrapper">
-            <select class="status-select status-${item.user_status || 'unprocessed'}" onchange="updateStatus('${item.id}', this.value)">
+            <select class="status-select status-${item.user_status || 'unprocessed'}" onchange="updateStatus('${item.id}', this.value, this)">
               <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>Рассмотреть</option>
               <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>Целевой</option>
               <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>Нецелевой</option>
@@ -404,11 +404,7 @@ function changePage(newPage) {
 }
 
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======
-
-async function updateStatus(id, newStatus) {
-  // Сохраняем текущую страницу, чтобы пользователя не кидало на 1-ю
-  const savedPage = currentPage;
-
+async function updateStatus(id, newStatus, selectElement) {
   const { error } = await supabaseClient
     .from('tenders')
     .update({ user_status: newStatus })
@@ -416,18 +412,30 @@ async function updateStatus(id, newStatus) {
 
   if (error) {
     alert('Ошибка обновления статуса: ' + error.message);
-  } else {
-    const target = allTenders.find(x => x.id === id);
-    if (target) target.user_status = newStatus;
-    
+    return;
+  }
+
+  const target = allTenders.find(x => x.id === id);
+  if (target) target.user_status = newStatus;
+
+  // Если активен фильтр по статусу и статус сменился на другой, строка должна скрыться
+  const statusFilterVal = document.getElementById('statusFilter').value;
+  if (statusFilterVal !== 'all' && statusFilterVal !== newStatus) {
     applyFilters();
-    
-    // Возвращаем пользователя на ту же страницу, где он был
-    currentPage = savedPage;
-    renderCurrentPage();
+    return;
+  }
+
+  // Локальное обновление DOM без перерисовки всей таблицы (спасает от скачков и сброса Google Translate)
+  if (selectElement) {
+    const tr = selectElement.closest('tr');
+    if (tr) {
+      tr.className = '';
+      if (newStatus === 'target') tr.classList.add('row-target');
+      if (newStatus === 'ignore') tr.classList.add('row-ignore');
+      selectElement.className = `status-select status-${newStatus}`;
+    }
   }
 }
-
 
 // ====== ЭКСПОРТ И ПАРСИНГ ======
 function exportToExcel() {
