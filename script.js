@@ -137,12 +137,14 @@ function selectAllCategories(select) {
   applyFilters();
 }
 
+// Логика переключения быстрых дат (включая «Позавчера»)
 function setDateFilter(mode) {
   currentDateMode = mode;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
 
   if (mode === 'today') document.getElementById('tabToday').classList.add('active');
   if (mode === 'yesterday') document.getElementById('tabYesterday').classList.add('active');
+  if (mode === 'dayBefore') document.getElementById('tabDayBefore').classList.add('active');
   if (mode === 'all') document.getElementById('tabAll').classList.add('active');
   if (mode !== 'custom') document.getElementById('customDate').value = '';
 
@@ -183,14 +185,21 @@ function applyFilters() {
   const statusVal = document.getElementById('statusFilter').value;
   const customDateVal = document.getElementById('customDate').value;
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  const dayBefore = new Date(today);
+  dayBefore.setDate(today.getDate() - 2);
+  const dayBeforeStr = dayBefore.toISOString().split('T')[0];
 
   filteredTenders = allTenders.filter(item => {
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
+    if (currentDateMode === 'dayBefore' && item.publish_date !== dayBeforeStr) return false;
     if (currentDateMode === 'custom' && customDateVal && item.publish_date !== customDateVal) return false;
 
     if (statusVal !== 'all' && (item.user_status || 'unprocessed') !== statusVal) return false;
@@ -294,11 +303,14 @@ function renderTable(data) {
         </td>
         <td class="td-title">${item.title}</td>
         <td>
-          <select class="status-select status-${item.user_status || 'unprocessed'}" onchange="updateStatus('${item.id}', this.value)">
-            <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>⏳ Рассмотреть</option>
-            <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>🎯 Целевой</option>
-            <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>❌ Нецелевой</option>
-          </select>
+          <div class="status-select-wrapper">
+            <select class="status-select status-${item.user_status || 'unprocessed'}" onchange="updateStatus('${item.id}', this.value)">
+              <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>Рассмотреть</option>
+              <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>Целевой</option>
+              <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>Нецелевой</option>
+            </select>
+            <i data-lucide="chevron-down" class="status-select-icon"></i>
+          </div>
         </td>
         <td>
           <a href="${item.link}" target="_blank" class="link">

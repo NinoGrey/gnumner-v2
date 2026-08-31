@@ -44,21 +44,26 @@
 
   <div class="controls">
     <div class="controls-top">
-      <!-- Вкладки дат -->
+      <!-- Вкладки дат с кнопкой Позавчера -->
       <div class="tabs">
         <button class="tab" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
         <button class="tab" id="tabYesterday" onclick="setDateFilter('yesterday')">Вчера</button>
+        <button class="tab" id="tabDayBefore" onclick="setDateFilter('dayBefore')">Позавчера</button>
         <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
       </div>
 
-      <input type="date" id="customDate" onchange="setDateFilter('custom')">
+      <input type="date" id="customDate" class="custom-date-picker" onchange="setDateFilter('custom')">
 
-      <select id="statusFilter" onchange="applyFilters()">
-        <option value="all">Все статусы</option>
-        <option value="target">🎯 Только целевые</option>
-        <option value="ignore">❌ Нецелевые</option>
-        <option value="unprocessed">⏳ На рассмотрении</option>
-      </select>
+      <!-- Кастомный выпадающий список фильтра статусов -->
+      <div class="select-wrapper">
+        <select id="statusFilter" class="custom-select" onchange="applyFilters()">
+          <option value="all">Все статусы</option>
+          <option value="target">Целевые</option>
+          <option value="ignore">Нецелевые</option>
+          <option value="unprocessed">На рассмотрении</option>
+        </select>
+        <i data-lucide="chevron-down" class="select-icon"></i>
+      </div>
     </div>
 
     <div class="controls-bottom">
