@@ -21,7 +21,7 @@ let availableCategoriesList = [];
 
 // ПАГИНАЦИЯ
 let currentPage = 1;
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 100;
 
 // ЦВЕТОВАЯ ПАЛИТРА КАТЕГОРИЙ
 const CATEGORY_PALETTE = {
@@ -177,9 +177,11 @@ function updateSortIcons() {
   }
 }
 
+// ====== ФИЛЬТРЫ И СОРТИРОВКА ======
 function applyFilters() {
   updateSortIcons();
-  currentPage = 1;
+  // Убираем жесткий сброс currentPage = 1 отсюда, 
+  // чтобы страница сохранялась при смене статусов
 
   const search = document.getElementById('searchInput').value.toLowerCase();
   const statusVal = document.getElementById('statusFilter').value;
@@ -402,7 +404,11 @@ function changePage(newPage) {
 }
 
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======
+
 async function updateStatus(id, newStatus) {
+  // Сохраняем текущую страницу, чтобы пользователя не кидало на 1-ю
+  const savedPage = currentPage;
+
   const { error } = await supabaseClient
     .from('tenders')
     .update({ user_status: newStatus })
@@ -413,9 +419,15 @@ async function updateStatus(id, newStatus) {
   } else {
     const target = allTenders.find(x => x.id === id);
     if (target) target.user_status = newStatus;
+    
     applyFilters();
+    
+    // Возвращаем пользователя на ту же страницу, где он был
+    currentPage = savedPage;
+    renderCurrentPage();
   }
 }
+
 
 // ====== ЭКСПОРТ И ПАРСИНГ ======
 function exportToExcel() {
