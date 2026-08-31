@@ -400,7 +400,7 @@ function renderTable(data) {
               <i data-lucide="minus" class="icon-sm"></i>
             </button>
             <button class="status-seg-btn seg-question ${currentStatus === 'question' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'question', this)" title="Под вопросом">
-              <i data-lucide="help-circle" class="icon-sm"></i>
+              <i data-lucide="flag" class="icon-sm"></i>
             </button>
             <button class="status-seg-btn seg-target ${currentStatus === 'target' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'target', this)" title="Целевой">
               <i data-lucide="check" class="icon-sm"></i>
