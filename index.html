@@ -4,39 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Мониторинг Тендеров Gnumner</title>
-  <!-- Supabase JS Client -->
+  
+  <!-- Подключение шрифта Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Библиотека минималистичных иконок Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Supabase JS Client и SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- SheetJS для экспорта в Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Подключение CSS файла -->
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
   <header>
-    <h1>📋 Тендеры Gnumner</h1>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <i data-lucide="clipboard-list" style="color: var(--primary); width: 28px; height: 28px;"></i>
+      <h1>Тендеры Gnumner</h1>
+    </div>
     <div style="display: flex; gap: 10px;">
-      <button class="btn btn-excel" onclick="exportToExcel()">📊 Скачать Excel</button>
-      <button class="btn" id="updateBtn" onclick="triggerParsing()">🔄 Обновить базу</button>
+      <button class="btn btn-excel" onclick="exportToExcel()">
+        <i data-lucide="file-spreadsheet" class="icon-sm"></i> Скачать Excel
+      </button>
+      <button class="btn" id="updateBtn" onclick="triggerParsing()">
+        <i data-lucide="refresh-cw" class="icon-sm"></i> Обновить базу
+      </button>
     </div>
   </header>
 
-  <span id="statusLog">Готово к работе.</span>
+  <span id="statusLog">Загрузка данных...</span>
 
   <div class="controls">
     <div class="controls-top">
-      <!-- Быстрые вкладки по датам -->
+      <!-- Вкладки дат -->
       <div class="tabs">
         <button class="tab" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
         <button class="tab" id="tabYesterday" onclick="setDateFilter('yesterday')">Вчера</button>
         <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
       </div>
 
-      <!-- Выбор конкретной даты -->
       <input type="date" id="customDate" onchange="setDateFilter('custom')">
 
-      <!-- Фильтр по пользовательскому статусу -->
       <select id="statusFilter" onchange="applyFilters()">
         <option value="all">Все статусы</option>
         <option value="target">🎯 Только целевые</option>
@@ -46,8 +59,10 @@
     </div>
 
     <div class="controls-bottom">
-      <!-- Поиск по названию / номерам -->
-      <input type="text" id="searchInput" placeholder="Поиск по названию или категории..." oninput="applyFilters()">
+      <div style="position: relative; width: 100%;">
+        <i data-lucide="search" style="position: absolute; left: 12px; top: 10px; color: var(--muted); width: 18px;"></i>
+        <input type="text" id="searchInput" placeholder="Поиск по названию или категории..." oninput="applyFilters()" style="padding-left: 38px;">
+      </div>
     </div>
   </div>
 
@@ -55,36 +70,38 @@
     <table>
       <thead>
         <tr>
-          <th onclick="sortData('publish_date')">Публикация <span id="sort-publish_date" class="sort-icon">↕</span></th>
-          <th onclick="sortData('deadline_date')">Дедлайн <span id="sort-deadline_date" class="sort-icon">↕</span></th>
+          <th onclick="sortData('publish_date')">
+            <div class="th-content">Публикация <i data-lucide="arrow-up-down" class="sort-icon"></i></div>
+          </th>
+          <th onclick="sortData('deadline_date')">
+            <div class="th-content">Дедлайн <i data-lucide="arrow-up-down" class="sort-icon"></i></div>
+          </th>
           <th class="th-dropdown-container">
-            <span onclick="toggleCategoryDropdown(event)" style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-              Категория <span class="sort-icon">▼</span>
+            <span onclick="toggleCategoryDropdown(event)" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+              Категория <i data-lucide="chevron-down" class="sort-icon"></i>
             </span>
-            <!-- Выпадающий мультифильтр категорий -->
             <div id="categoryDropdown" class="category-dropdown-content" onclick="event.stopPropagation()">
               <div class="dropdown-actions">
                 <span onclick="selectAllCategories(true)" class="dropdown-link">Выбрать все</span>
                 <span onclick="selectAllCategories(false)" class="dropdown-link">Сбросить</span>
               </div>
-              <div id="categoryCheckboxesList">
-                <!-- Динамически заполняется скриптом -->
-              </div>
+              <div id="categoryCheckboxesList"></div>
             </div>
           </th>
-          <th onclick="sortData('title')">Наименование тендера <span id="sort-title" class="sort-icon">↕</span></th>
+          <th onclick="sortData('title')">
+            <div class="th-content">Наименование <i data-lucide="arrow-up-down" class="sort-icon"></i></div>
+          </th>
           <th>Статус</th>
           <th>Ссылка</th>
         </tr>
       </thead>
       <tbody id="tendersBody">
-        <tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--muted);">Загрузка данных из Supabase...</td></tr>
+        <tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--muted);">Инициализация...</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- Подключение JS файла -->
 <script src="script.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// Конфигурация Supabase
+// ====== КОНФИГУРАЦИЯ ======
 const SUPABASE_URL = 'https://pkjrjtwlryuuconrpcnx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_QfqhRHEjHYp_xA1nC_y7AQ__4pDx3-F';
 
@@ -6,44 +6,22 @@ const GH_USER = 'NinoGrey';
 const GH_REPO = 'gnumner-v2';
 const WORKFLOW_ID = 'tracker.yml';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ====== СОСТОЯНИЕ ======
 let allTenders = [];
 let currentDateMode = 'all';
 
-// Состояние сортировки
 let currentSortColumn = 'publish_date';
-let currentSortDirection = 'desc'; // по умолчанию новые сверху
+let currentSortDirection = 'desc'; 
 
-// Выбранные категории для мультифильтра (пустой Set означает «все выбраны»)
 let selectedCategories = new Set();
 let availableCategoriesList = [];
-
-// Генератор стабильного цвета для каждой уникальной категории
 const categoryColorCache = {};
-function getCategoryBadgeStyle(categoryName) {
-  if (!categoryName) categoryName = 'Общее';
-  if (categoryColorCache[categoryName]) return categoryColorCache[categoryName];
 
-  // Хэш-функция для перевода строки в число
-  let hash = 0;
-  for (let i = 0; i < categoryName.length; i++) {
-    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  // Генерация мягкого пастельного цвета в HSL
-  const hue = Math.abs(hash) % 360;
-  const bgColor = `hsla(${hue}, 65%, 22%, 0.6)`;
-  const borderColor = `hsla(${hue}, 65%, 45%, 0.8)`;
-  const textColor = `hsl(${hue}, 80%, 75%)`;
-
-  const styleString = `background: ${bgColor}; border-color: ${borderColor}; color: ${textColor};`;
-  categoryColorCache[categoryName] = styleString;
-  return styleString;
-}
-
-// Инициализация при загрузке
+// ====== ИНИЦИАЛИЗАЦИЯ ======
 window.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
   setDateFilter('all');
   loadTenders();
 
@@ -56,10 +34,32 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Полный обход системного лимита Supabase через постраничную выгрузку
+// ====== ГЕНЕРАЦИЯ ЦВЕТОВ КАТЕГОРИЙ ======
+function getCategoryBadgeStyle(categoryName) {
+  if (!categoryName) categoryName = 'Общее';
+  if (categoryColorCache[categoryName]) return categoryColorCache[categoryName];
+
+  let hash = 0;
+  for (let i = 0; i < categoryName.length; i++) {
+    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash) % 360;
+  // Используем твою логику HSL, она идеально подходит под темную тему
+  const bgColor = `hsla(${hue}, 65%, 22%, 0.6)`;
+  const borderColor = `hsla(${hue}, 65%, 45%, 0.8)`;
+  const textColor = `hsl(${hue}, 80%, 75%)`;
+
+  const styleString = `background: ${bgColor}; border-color: ${borderColor}; color: ${textColor};`;
+  categoryColorCache[categoryName] = styleString;
+  return styleString;
+}
+
+// ====== ЗАГРУЗКА ИЗ SUPABASE ======
 async function loadTenders() {
   const log = document.getElementById('statusLog');
-  log.innerText = '⏳ Загрузка базы данных...';
+  log.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 1s linear infinite;"></i> Загрузка базы данных...`;
+  lucide.createIcons();
 
   let fetchedData = [];
   let from = 0;
@@ -91,11 +91,12 @@ async function loadTenders() {
     initCategoriesFilterList();
     applyFilters();
   } catch (err) {
-    log.innerText = '❌ Ошибка загрузки данных из Supabase: ' + err.message;
+    log.innerHTML = `<i data-lucide="alert-circle" class="icon-sm" style="color:var(--danger);"></i> Ошибка загрузки данных: ${err.message}`;
+    lucide.createIcons();
   }
 }
 
-// Инициализация списка чекбоксов категорий
+// ====== ФИЛЬТРЫ И СОРТИРОВКА ======
 function initCategoriesFilterList() {
   const catSet = new Set();
   allTenders.forEach(item => {
@@ -103,7 +104,6 @@ function initCategoriesFilterList() {
   });
   availableCategoriesList = Array.from(catSet).sort();
 
-  // Изначально выбираем все категории
   selectedCategories = new Set(availableCategoriesList);
 
   const container = document.getElementById('categoryCheckboxesList');
@@ -115,39 +115,28 @@ function initCategoriesFilterList() {
   `).join('');
 }
 
-// Открытие/закрытие выпадающего списка категорий
 function toggleCategoryDropdown(event) {
   event.stopPropagation();
-  const dropdown = document.getElementById('categoryDropdown');
-  dropdown.classList.toggle('show');
+  document.getElementById('categoryDropdown').classList.toggle('show');
 }
 
-// Обработка изменения чекбокса категории
 function handleCategoryCheckboxChange(checkbox) {
   const cat = checkbox.value;
-  if (checkbox.checked) {
-    selectedCategories.add(cat);
-  } else {
-    selectedCategories.delete(cat);
-  }
+  if (checkbox.checked) selectedCategories.add(cat);
+  else selectedCategories.delete(cat);
   applyFilters();
 }
 
-// Выбрать все / Сбросить в чекбоксах категорий
 function selectAllCategories(select) {
   const checkboxes = document.querySelectorAll('#categoryCheckboxesList input[type="checkbox"]');
   checkboxes.forEach(cb => {
     cb.checked = select;
-    if (select) {
-      selectedCategories.add(cb.value);
-    } else {
-      selectedCategories.delete(cb.value);
-    }
+    if (select) selectedCategories.add(cb.value);
+    else selectedCategories.delete(cb.value);
   });
   applyFilters();
 }
 
-// Настройка фильтров по датам
 function setDateFilter(mode) {
   currentDateMode = mode;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -160,31 +149,32 @@ function setDateFilter(mode) {
   applyFilters();
 }
 
-// Сортировка данных по клику на заголовок
 function sortData(column) {
   if (currentSortColumn === column) {
     currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
   } else {
     currentSortColumn = column;
-    currentSortDirection = 'asc'; // по умолчанию при смене колонки — по возрастанию
+    currentSortDirection = 'asc'; 
   }
   applyFilters();
 }
 
-// Обновление иконок сортировки в шапке
 function updateSortIcons() {
   document.querySelectorAll('.sort-icon').forEach(icon => {
-    if (!icon.closest('th').classList.contains('th-dropdown-container')) {
-      icon.innerText = '↕';
+    if (icon.closest('th') && !icon.closest('th').classList.contains('th-dropdown-container')) {
+      icon.setAttribute('data-lucide', 'arrow-up-down');
     }
   });
-  const activeIcon = document.getElementById(`sort-${currentSortColumn}`);
-  if (activeIcon) {
-    activeIcon.innerText = currentSortDirection === 'asc' ? '▲' : '▼';
+  
+  const activeTh = document.querySelector(`th[onclick="sortData('${currentSortColumn}')"]`);
+  if (activeTh) {
+    const icon = activeTh.querySelector('.sort-icon');
+    if (icon) {
+      icon.setAttribute('data-lucide', currentSortDirection === 'asc' ? 'arrow-up' : 'arrow-down');
+    }
   }
 }
 
-// Применение фильтров, поиска и сортировки
 function applyFilters() {
   updateSortIcons();
 
@@ -193,34 +183,27 @@ function applyFilters() {
   const customDateVal = document.getElementById('customDate').value;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
 
   let filtered = allTenders.filter(item => {
-    // 1. Фильтр по дате
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
     if (currentDateMode === 'custom' && customDateVal && item.publish_date !== customDateVal) return false;
 
-    // 2. Фильтр по статусу
     if (statusVal !== 'all' && (item.user_status || 'unprocessed') !== statusVal) return false;
 
-    // 3. Мультифильтр по выбранным категориям
     const cat = item.category || 'Общее';
     if (!selectedCategories.has(cat)) return false;
 
-    // 4. Поиск по тексту
     if (search) {
       const text = `${item.title} ${cat}`.toLowerCase();
       if (!text.includes(search)) return false;
     }
-
     return true;
   });
 
-  // 5. Сортировка отфильтрованного массива
   filtered.sort((a, b) => {
     let valA = a[currentSortColumn] || '';
     let valB = b[currentSortColumn] || '';
@@ -230,18 +213,18 @@ function applyFilters() {
     return 0;
   });
 
-  // Динамический счетчик отображаемых тендеров
   const log = document.getElementById('statusLog');
-  log.innerHTML = `✅ Отображается тендеров: <b>${filtered.length}</b> (всего в базе: ${allTenders.length})`;
+  log.innerHTML = `<i data-lucide="check-circle-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; color: var(--success);"></i> Отображается тендеров: <b>${filtered.length}</b> (всего в базе: ${allTenders.length})`;
 
   renderTable(filtered);
 }
 
-// Отрисовка таблицы
+// ====== РЕНДЕР ТАБЛИЦЫ ======
 function renderTable(data) {
   const tbody = document.getElementById('tendersBody');
   if (data.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--muted);">Записи не найдены</td></tr>`;
+    lucide.createIcons();
     return;
   }
 
@@ -253,44 +236,35 @@ function renderTable(data) {
     if (item.user_status === 'target') rowClass = 'row-target';
     if (item.user_status === 'ignore') rowClass = 'row-ignore';
 
-    // Обработка дедлайна с учетом времени завершения
-    let deadlineHtml = '—';
+    let deadlineClass = '';
     if (item.deadline_date) {
       const dDate = new Date(item.deadline_date);
       dDate.setHours(0,0,0,0);
       const diffDays = Math.ceil((dDate - todayDate) / (1000 * 60 * 60 * 24));
       
-      const deadlineTimePart = item.deadline_time ? ` <span style="font-size:0.75rem; opacity:0.8;">${item.deadline_time}</span>` : '';
-
-      if (diffDays < 0) {
-        deadlineHtml = `<span class="deadline-expired" title="Просрочено">${item.deadline_date}${deadlineTimePart}</span>`;
-      } else if (diffDays <= 2) {
-        deadlineHtml = `<span class="deadline-soon" title="Горит! Осталось дней: ${diffDays}">⚠️ ${item.deadline_date}${deadlineTimePart}</span>`;
-      } else {
-        deadlineHtml = `<span>${item.deadline_date}${deadlineTimePart}</span>`;
-      }
+      if (diffDays < 0) deadlineClass = 'deadline-expired';
+      else if (diffDays <= 2) deadlineClass = 'deadline-soon';
     }
 
     const catName = item.category || 'Общее';
     
-    // Время публикации берется из поля publish_time (поддерживается fallback на created_at)
-    let timeStr = '';
-    if (item.publish_time) {
-      timeStr = item.publish_time;
-    } else if (item.created_at) {
-      const timePart = item.created_at.split('T')[1];
-      if (timePart) {
-        timeStr = timePart.substring(0, 5);
-      }
-    }
+    let pubTimeStr = item.publish_time || (item.created_at ? item.created_at.split('T')[1].substring(0, 5) : '--:--');
+    let dlTimeStr = item.deadline_time || '--:--';
 
     return `
       <tr class="${rowClass}">
         <td>
-          <span class="td-date-pub">${item.publish_date}</span>
-          ${timeStr ? `<span class="td-time-pub">⏰ ${timeStr}</span>` : ''}
+          <div class="date-container">
+            <span class="td-date">${item.publish_date}</span>
+            <span class="td-time"><i data-lucide="clock" class="icon-sm"></i> ${pubTimeStr}</span>
+          </div>
         </td>
-        <td class="td-date-deadline">${deadlineHtml}</td>
+        <td class="${deadlineClass}">
+          <div class="date-container">
+            <span class="td-date">${item.deadline_date || '—'}</span>
+            <span class="td-time"><i data-lucide="clock" class="icon-sm"></i> ${dlTimeStr}</span>
+          </div>
+        </td>
         <td>
           <span class="category-badge" style="${getCategoryBadgeStyle(catName)}" title="${catName}">
             ${catName}
@@ -298,20 +272,26 @@ function renderTable(data) {
         </td>
         <td class="td-title">${item.title}</td>
         <td>
-          <select class="status-select ${item.user_status === 'target' ? 'status-target' : (item.user_status === 'ignore' ? 'status-ignore' : '')}" 
-                  onchange="updateStatus('${item.id}', this.value)">
+          <select class="status-select status-${item.user_status || 'unprocessed'}" onchange="updateStatus('${item.id}', this.value)">
             <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>⏳ Рассмотреть</option>
             <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>🎯 Целевой</option>
             <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>❌ Нецелевой</option>
           </select>
         </td>
-        <td><a href="${item.link}" target="_blank" class="link">Открыть ↗</a></td>
+        <td>
+          <a href="${item.link}" target="_blank" class="link">
+            <i data-lucide="external-link" class="icon-sm"></i> Открыть
+          </a>
+        </td>
       </tr>
     `;
   }).join('');
+
+  // Инициализация иконок для новых строк
+  lucide.createIcons();
 }
 
-// Изменение статуса тендера
+// ====== ОБНОВЛЕНИЕ СТАТУСА ======
 async function updateStatus(id, newStatus) {
   const { error } = await supabaseClient
     .from('tenders')
@@ -327,7 +307,7 @@ async function updateStatus(id, newStatus) {
   }
 }
 
-// Выгрузка в Excel с учетом времени публикации и дедлайна
+// ====== ЭКСПОРТ И ПАРСИНГ ======
 function exportToExcel() {
   const rows = allTenders.map(t => ({
     'Дата публикации': t.publish_date,
@@ -346,7 +326,6 @@ function exportToExcel() {
   XLSX.writeFile(workbook, `Tenders_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
-// Запуск парсера через GitHub API
 async function triggerParsing() {
   let token = localStorage.getItem('gh_token');
   if (!token) {
@@ -358,7 +337,9 @@ async function triggerParsing() {
   const btn = document.getElementById('updateBtn');
   const log = document.getElementById('statusLog');
   btn.disabled = true;
-  log.innerText = '🚀 Запуск парсера в GitHub Actions...';
+  
+  log.innerHTML = `<i data-lucide="rocket" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px;"></i> Запуск парсера в GitHub Actions...`;
+  lucide.createIcons();
 
   try {
     const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`, {
@@ -372,7 +353,8 @@ async function triggerParsing() {
 
     if (!res.ok) throw new Error('Ошибка запуска Actions.');
 
-    log.innerText = '⚙️ Парсер запущен. Проверяем новые тендеры в Supabase каждые 5 секунд...';
+    log.innerHTML = `<i data-lucide="settings" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 2s linear infinite;"></i> Парсер запущен. Проверяем новые тендеры...`;
+    lucide.createIcons();
     
     let checks = 0;
     const interval = setInterval(async () => {
@@ -381,7 +363,8 @@ async function triggerParsing() {
       if (checks >= 12) {
         clearInterval(interval);
         btn.disabled = false;
-        log.innerText = '✅ Синхронизация завершена.';
+        log.innerHTML = `<i data-lucide="check-circle-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; color: var(--success);"></i> Синхронизация завершена.`;
+        lucide.createIcons();
       }
     }, 5000);
 
