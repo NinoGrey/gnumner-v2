@@ -279,7 +279,7 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
 }
 .pagination-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); }
 .pagination-input::-webkit-inner-spin-button, .pagination-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pagination-input[type=number] { -moz-appearance: textfield; }
+.pagination-input[type=number] { appearance: textfield; -moz-appearance: textfield; }
 
 /* Сегментированные кнопки статуса */
 .status-segmented-control {
