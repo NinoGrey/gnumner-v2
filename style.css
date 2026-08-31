@@ -215,7 +215,7 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
   max-width: 190px;
   min-width: 120px;
   font-size: 0.8rem;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
 }
 
 /* Пагинация */
