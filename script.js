@@ -324,6 +324,7 @@ function applyFilters() {
   log.innerHTML = `<i data-lucide="check-circle-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; color: var(--success);"></i> Отображается тендеров: <b>${filteredTenders.length}</b> (всего в базе: ${allTenders.length})`;
 
   renderCurrentPage();
+  updateStatsSummary();
 }
 
 // ====== РЕНДЕР ТАБЛИЦЫ И ПАГИНАЦИЯ ======
@@ -399,7 +400,7 @@ function renderTable(data) {
             <button class="status-seg-btn seg-unprocessed ${currentStatus === 'unprocessed' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'unprocessed', this)" title="На рассмотрении">
               <i data-lucide="minus" class="icon-sm"></i>
             </button>
-            <button class="status-seg-btn seg-question ${currentStatus === 'question' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'question', this)" title="Под вопросом">
+            <button class="status-seg-btn seg-question ${currentStatus === 'question' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'question', this)" title="На проверку">
               <i data-lucide="flag" class="icon-sm"></i>
             </button>
             <button class="status-seg-btn seg-target ${currentStatus === 'target' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'target', this)" title="Целевой">
@@ -531,6 +532,49 @@ async function updateStatus(id, newStatus, btnElement) {
       }
     }
   }
+
+  updateStatsSummary();
+}
+
+// ====== ОБНОВЛЕНИЕ СЧЕТЧИКА СТАТУСОВ ======
+function updateStatsSummary() {
+  const container = document.getElementById('statsSummary');
+  if (!container) return;
+
+  const counts = {
+    total: filteredTenders.length,
+    ignore: 0,
+    unprocessed: 0,
+    question: 0,
+    target: 0
+  };
+
+  filteredTenders.forEach(item => {
+    const st = item.user_status || 'unprocessed';
+    if (counts[st] !== undefined) counts[st]++;
+    else counts.unprocessed++;
+  });
+
+  container.innerHTML = `
+    <div class="stat-chip stat-total" title="Всего тендеров в текущей выборке">
+      <span class="stat-label">Всего:</span> <b>${counts.total}</b>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-chip stat-ignore" title="Нецелевые">
+      <i data-lucide="x" class="icon-sm"></i> <b>${counts.ignore}</b>
+    </div>
+    <div class="stat-chip stat-unprocessed" title="На рассмотрении">
+      <i data-lucide="minus" class="icon-sm"></i> <b>${counts.unprocessed}</b>
+    </div>
+    <div class="stat-chip stat-question" title="На проверку">
+      <i data-lucide="flag" class="icon-sm"></i> <b>${counts.question}</b>
+    </div>
+    <div class="stat-chip stat-target" title="Целевые">
+      <i data-lucide="check" class="icon-sm"></i> <b>${counts.target}</b>
+    </div>
+  `;
+  
+  lucide.createIcons();
 }
 
 // ====== ЭКСПОРТ И ПАРСИНГ ======
@@ -542,7 +586,7 @@ function exportToExcel() {
     'Время окончания': t.deadline_time || '',
     'Категория': t.category || '',
     'Наименование': t.title,
-    'Статус': t.user_status === 'target' ? 'Целевой' : (t.user_status === 'question' ? 'Вопрос' : (t.user_status === 'ignore' ? 'Нецелевой' : 'На рассмотрении')),
+    'Статус': t.user_status === 'target' ? 'Целевой' : (t.user_status === 'question' ? 'На проверку' : (t.user_status === 'ignore' ? 'Нецелевой' : 'На рассмотрении')),
     'Ссылка': t.link
   }));
 
