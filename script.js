@@ -45,7 +45,6 @@ function getCategoryBadgeStyle(categoryName) {
   }
 
   const hue = Math.abs(hash) % 360;
-  // Используем твою логику HSL, она идеально подходит под темную тему
   const bgColor = `hsla(${hue}, 65%, 22%, 0.6)`;
   const borderColor = `hsla(${hue}, 65%, 45%, 0.8)`;
   const textColor = `hsl(${hue}, 80%, 75%)`;
@@ -72,6 +71,7 @@ async function loadTenders() {
         .from('tenders')
         .select('*')
         .order('publish_date', { ascending: false })
+        .order('publish_time', { ascending: false })
         .range(from, from + step - 1);
 
       if (error) throw error;
@@ -205,8 +205,18 @@ function applyFilters() {
   });
 
   filtered.sort((a, b) => {
-    let valA = a[currentSortColumn] || '';
-    let valB = b[currentSortColumn] || '';
+    let valA, valB;
+
+    if (currentSortColumn === 'publish_date') {
+      valA = `${a.publish_date || ''} ${a.publish_time || '00:00:00'}`;
+      valB = `${b.publish_date || ''} ${b.publish_time || '00:00:00'}`;
+    } else if (currentSortColumn === 'deadline_date') {
+      valA = `${a.deadline_date || ''} ${a.deadline_time || '00:00:00'}`;
+      valB = `${b.deadline_date || ''} ${b.deadline_time || '00:00:00'}`;
+    } else {
+      valA = a[currentSortColumn] || '';
+      valB = b[currentSortColumn] || '';
+    }
 
     if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
     if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
@@ -287,7 +297,6 @@ function renderTable(data) {
     `;
   }).join('');
 
-  // Инициализация иконок для новых строк
   lucide.createIcons();
 }
 
