@@ -54,15 +54,37 @@
 
       <input type="date" id="customDate" class="custom-date-picker" onchange="setDateFilter('custom')">
       
-      <!-- Кастомный выпадающий список фильтра статусов -->
-      <div class="select-wrapper">
-        <select id="statusFilter" class="custom-select" onchange="applyFilters()">
-          <option value="all">Все статусы</option>
-          <option value="target">Целевые</option>
-          <option value="ignore">Нецелевые</option>
-          <option value="unprocessed">На рассмотрении</option>
-        </select>
-        <i data-lucide="chevron-down" class="select-icon"></i>
+      <!-- Множественный фильтр статусов с галочками -->
+      <div class="status-dropdown-wrapper" style="position: relative;">
+        <button class="custom-select" onclick="toggleStatusDropdown(event)" style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="filter" class="icon-sm"></i>
+          <span>Статусы</span>
+          <i data-lucide="chevron-down" class="select-icon" style="position: static; transform: none;"></i>
+        </button>
+        <div id="statusDropdown" class="category-dropdown-content" onclick="event.stopPropagation()">
+          <div class="dropdown-actions">
+            <span onclick="selectAllStatuses(true)" class="dropdown-link">Выбрать все</span>
+            <span onclick="selectAllStatuses(false)" class="dropdown-link">Сбросить</span>
+          </div>
+          <div id="statusCheckboxesList">
+            <label class="category-checkbox-item">
+              <input type="checkbox" value="target" checked onchange="handleStatusCheckboxChange(this)">
+              <span class="status-seg-btn seg-target active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Целевые</span>
+            </label>
+            <label class="category-checkbox-item">
+              <input type="checkbox" value="question" checked onchange="handleStatusCheckboxChange(this)">
+              <span class="status-seg-btn seg-question active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Вопрос (?)</span>
+            </label>
+            <label class="category-checkbox-item">
+              <input type="checkbox" value="unprocessed" checked onchange="handleStatusCheckboxChange(this)">
+              <span class="status-seg-btn seg-unprocessed active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">На рассмотрении</span>
+            </label>
+            <label class="category-checkbox-item">
+              <input type="checkbox" value="ignore" checked onchange="handleStatusCheckboxChange(this)">
+              <span class="status-seg-btn seg-ignore active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Нецелевые</span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 

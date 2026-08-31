@@ -57,7 +57,7 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
   background: #0f172a;
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 8px 36px 8px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-size: 0.875rem;
   outline: none;
@@ -68,10 +68,6 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
 .custom-select:focus { border-color: var(--primary); }
 
 .select-icon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 16px;
   height: 16px;
   pointer-events: none;
@@ -128,6 +124,12 @@ tr.row-target {
 }
 tr.row-target:hover { background-color: rgba(34, 197, 94, 0.28) !important; }
 
+tr.row-question {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  box-shadow: inset 4px 0 0 #f59e0b;
+}
+tr.row-question:hover { background-color: rgba(245, 158, 11, 0.28) !important; }
+
 tr.row-ignore {
   background-color: rgba(239, 68, 68, 0.18) !important;
   box-shadow: inset 4px 0 0 #ef4444;
@@ -142,44 +144,6 @@ tr.row-ignore:hover { background-color: rgba(239, 68, 68, 0.28) !important; opac
 .deadline-soon .td-date { color: var(--warning); }
 .deadline-expired .td-date { color: var(--danger); text-decoration: line-through; opacity: 0.7; }
 
-/* Кастомный стилизованный селект статуса в таблице */
-.status-select-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.status-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 6px 28px 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid;
-  outline: none;
-}
-
-.status-select-icon {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  pointer-events: none;
-}
-
-.status-unprocessed { border-color: var(--border); color: var(--muted); background: var(--bg); }
-.status-unprocessed + .status-select-icon { color: var(--muted); }
-
-.status-target { border-color: rgba(16,185,129,0.3); color: #34d399; background: rgba(16,185,129,0.15); }
-.status-target + .status-select-icon { color: #34d399; }
-
-.status-ignore { border-color: rgba(239,68,68,0.3); color: #f87171; background: rgba(239,68,68,0.15); }
-.status-ignore + .status-select-icon { color: #f87171; }
-
 a.link { 
   background: var(--bg); border: 1px solid var(--border); padding: 6px 12px; 
   border-radius: 6px; color: var(--primary); text-decoration: none; font-weight: 500; 
@@ -192,7 +156,7 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
   display: none; position: absolute; top: calc(100% + 8px); left: 0;
   background: var(--card-bg); border: 1px solid var(--border);
   box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border-radius: 8px; padding: 12px;
-  z-index: 100; min-width: 280px; text-transform: none; font-weight: normal; color: var(--text);
+  z-index: 100; min-width: 240px; text-transform: none; font-weight: normal; color: var(--text);
 }
 .category-dropdown-content.show { display: block; }
 .dropdown-actions { display: flex; justify-content: space-between; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
@@ -244,6 +208,8 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
 .pagination-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); }
 .pagination-input::-webkit-inner-spin-button, .pagination-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pagination-input[type=number] { -moz-appearance: textfield; }
+
+/* Сегментированные кнопки статуса */
 .status-segmented-control {
   display: inline-flex;
   background: rgba(15, 23, 42, 0.6);
@@ -280,6 +246,11 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
 .status-seg-btn.seg-unprocessed.active {
   background: rgba(100, 116, 139, 0.3);
   color: #f8fafc;
+}
+
+.status-seg-btn.seg-question.active {
+  background: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
 }
 
 .status-seg-btn.seg-target.active {

@@ -19,6 +19,9 @@ let currentSortDirection = 'desc';
 let selectedCategories = new Set();
 let availableCategoriesList = [];
 
+// Выбранные статусы для фильтрации (по умолчанию включены все 4)
+let selectedStatuses = new Set(['target', 'question', 'unprocessed', 'ignore']);
+
 // ПАГИНАЦИЯ
 let currentPage = 1;
 const PAGE_SIZE = 100;
@@ -35,16 +38,16 @@ const CATEGORY_PALETTE = {
   'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(161, 98, 7, 0.4)', border: '#eab308', color: '#fef08a' },
   'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(67, 56, 202, 0.4)', border: '#6366f1', color: '#c7d2fe' }
 };
+
 // ====== КЛЮЧЕВЫЕ СЛОВА ДЛЯ ПОДСВЕТКИ ======
-const GREEN_KEYWORDS = ['համազգեստ']; // слова для зеленой подсветки
-const RED_KEYWORDS = ['ԿԱՀՈՒՅՔ', 'ծառայություն', 'ՕԴՈՐԱԿԻՉ', 'ՀԱՄԱԿԱՐԳԻՉ','ՀԱՄԱԿԱՐԳՉԱՅԻՆ', 'պլանշետներ', 'վերկառուցուման','կենցաղային', 'աշխատանք', 'տեխնիկա', 'լուծում','կազմակերպման', 'բարեկարգման','սարքավորում','էլեկտրական','մեքենա', 'շինարարական', 'շինարար','Դեղորայք','պատվաստանյութ', 'ԿԱՆԱՉԱՊԱՏ','բարեկարգման','Համակարգիչ','վառելիք', 'քարթիրջներ', 'համակարգ','սարքերի', 'պահեստամասեր','ավտոմեքենա', 'լաբորատոր', 'պարագաներ', 'միջոցառում', 'փորձաքննութ', 'փաստաթղթեր', 'գործիք']; // слова для красной подсветки
+const GREEN_KEYWORDS = ['համազգեստ']; 
+const RED_KEYWORDS = ['ԿԱՀՈՒՅՔ', 'ծառայություն', 'ՕԴՈՐԱԿԻՉ', 'ՀԱՄԱԿԱՐԳԻՉ','ՀԱՄԱԿԱՐԳՉԱՅԻՆ', 'պլանշետներ', 'վերկառուցուման','կենցաղային', 'աշխատանք', 'տեխնիկա', 'լուծում','կազմակերպման', 'բարեկարգման','սարքավորում','էլեկտրական','մեքենա', 'շինարարական', 'շինարար','Դեղորայք','պատվաստանյութ', 'ԿԱՆԱՉԱՊԱՏ','բարեկարգման','Համակարգիչ','վառելիք', 'քարթիրջներ', 'համակարգ','սարքերի', 'պահեստամասեր','ավտոմեքենա', 'լաբորատոր', 'պարագաներ', 'միջոցառում', 'փորձաքննութ', 'փաստաթղթեր', 'գործիք']; 
 
 function highlightKeywords(titleText) {
   if (!titleText) return '';
   
   let formattedText = titleText;
 
-  // Функция для безопасной замены слов без учета регистра
   const replaceWords = (text, words, colorClass) => {
     words.forEach(word => {
       if (!word.trim()) return;
@@ -69,6 +72,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.getElementById('categoryDropdown');
     if (dropdown && !e.target.closest('.th-dropdown-container')) {
       dropdown.classList.remove('show');
+    }
+
+    const statusDropdown = document.getElementById('statusDropdown');
+    if (statusDropdown && !e.target.closest('.status-dropdown-wrapper')) {
+      statusDropdown.classList.remove('show');
     }
   });
 });
@@ -160,7 +168,29 @@ function selectAllCategories(select) {
   applyFilters();
 }
 
-// Быстрые фильтры даты (сбрасывают ручные диапазоны при желании, либо работают вместе)
+// Управление фильтром статусов
+function toggleStatusDropdown(event) {
+  event.stopPropagation();
+  document.getElementById('statusDropdown').classList.toggle('show');
+}
+
+function handleStatusCheckboxChange(checkbox) {
+  const status = checkbox.value;
+  if (checkbox.checked) selectedStatuses.add(status);
+  else selectedStatuses.delete(status);
+  applyFilters();
+}
+
+function selectAllStatuses(select) {
+  const checkboxes = document.querySelectorAll('#statusCheckboxesList input[type="checkbox"]');
+  checkboxes.forEach(cb => {
+    cb.checked = select;
+    if (select) selectedStatuses.add(cb.value);
+    else selectedStatuses.delete(cb.value);
+  });
+  applyFilters();
+}
+
 function setDateFilter(mode) {
   currentDateMode = mode;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -171,7 +201,6 @@ function setDateFilter(mode) {
   if (mode === 'all') document.getElementById('tabAll').classList.add('active');
   
   if (mode !== 'all') {
-    // Очищаем ручные фильтры публикации при выборе быстрых пресетов
     const pubFrom = document.getElementById('pubDateFrom');
     const pubTo = document.getElementById('pubDateTo');
     if (pubFrom) pubFrom.value = '';
@@ -220,13 +249,10 @@ function applyFilters() {
   updateSortIcons();
 
   const search = document.getElementById('searchInput').value.toLowerCase();
-  const statusVal = document.getElementById('statusFilter').value;
 
-  // Значения диапазона дат публикации
   const pubFrom = document.getElementById('pubDateFrom')?.value || '';
   const pubTo = document.getElementById('pubDateTo')?.value || '';
 
-  // Значения диапазона дат дедлайна
   const dlFrom = document.getElementById('deadlineDateFrom')?.value || '';
   const dlTo = document.getElementById('deadlineDateTo')?.value || '';
 
@@ -242,16 +268,16 @@ function applyFilters() {
   const dayBeforeStr = dayBefore.toISOString().split('T')[0];
 
   filteredTenders = allTenders.filter(item => {
-    // 1. Быстрые фильтры по дате публикации (если активны)
+    // 1. Быстрые фильтры по дате публикации
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
     if (currentDateMode === 'dayBefore' && item.publish_date !== dayBeforeStr) return false;
 
-    // 2. Ручной диапазон даты публикации (С - По)
+    // 2. Диапазон даты публикации (С - По)
     if (pubFrom && item.publish_date < pubFrom) return false;
     if (pubTo && item.publish_date > pubTo) return false;
 
-    // 3. Ручной диапазон даты завершения / дедлайна (С - По)
+    // 3. Диапазон даты дедлайна (С - По)
     if (dlFrom) {
       if (!item.deadline_date || item.deadline_date < dlFrom) return false;
     }
@@ -259,8 +285,9 @@ function applyFilters() {
       if (!item.deadline_date || item.deadline_date > dlTo) return false;
     }
 
-    // 4. Фильтр по статусу
-    if (statusVal !== 'all' && (item.user_status || 'unprocessed') !== statusVal) return false;
+    // 4. Множественный фильтр по статусу
+    const itemStatus = item.user_status || 'unprocessed';
+    if (!selectedStatuses.has(itemStatus)) return false;
 
     // 5. Фильтр по категориям
     const cat = item.category || 'Общее';
@@ -326,6 +353,7 @@ function renderTable(data) {
   tbody.innerHTML = data.map(item => {
     let rowClass = '';
     if (item.user_status === 'target') rowClass = 'row-target';
+    if (item.user_status === 'question') rowClass = 'row-question';
     if (item.user_status === 'ignore') rowClass = 'row-ignore';
 
     let deadlineClass = '';
@@ -370,6 +398,9 @@ function renderTable(data) {
             </button>
             <button class="status-seg-btn seg-unprocessed ${currentStatus === 'unprocessed' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'unprocessed', this)" title="На рассмотрении">
               <i data-lucide="minus" class="icon-sm"></i>
+            </button>
+            <button class="status-seg-btn seg-question ${currentStatus === 'question' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'question', this)" title="Под вопросом">
+              <i data-lucide="help-circle" class="icon-sm"></i>
             </button>
             <button class="status-seg-btn seg-target ${currentStatus === 'target' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'target', this)" title="Целевой">
               <i data-lucide="check" class="icon-sm"></i>
@@ -480,8 +511,7 @@ async function updateStatus(id, newStatus, btnElement) {
   const target = allTenders.find(x => x.id === id);
   if (target) target.user_status = newStatus;
 
-  const statusFilterVal = document.getElementById('statusFilter').value;
-  if (statusFilterVal !== 'all' && statusFilterVal !== newStatus) {
+  if (!selectedStatuses.has(newStatus)) {
     applyFilters();
     return;
   }
@@ -491,6 +521,7 @@ async function updateStatus(id, newStatus, btnElement) {
     if (tr) {
       tr.className = '';
       if (newStatus === 'target') tr.classList.add('row-target');
+      if (newStatus === 'question') tr.classList.add('row-question');
       if (newStatus === 'ignore') tr.classList.add('row-ignore');
 
       const container = btnElement.closest('.status-segmented-control');
@@ -511,7 +542,7 @@ function exportToExcel() {
     'Время окончания': t.deadline_time || '',
     'Категория': t.category || '',
     'Наименование': t.title,
-    'Статус': t.user_status === 'target' ? 'Целевой' : (t.user_status === 'ignore' ? 'Нецелевой' : 'На рассмотрении'),
+    'Статус': t.user_status === 'target' ? 'Целевой' : (t.user_status === 'question' ? 'Вопрос' : (t.user_status === 'ignore' ? 'Нецелевой' : 'На рассмотрении')),
     'Ссылка': t.link
   }));
 
