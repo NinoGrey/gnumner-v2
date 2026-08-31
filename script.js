@@ -10,6 +10,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 // ====== СОСТОЯНИЕ ======
 let allTenders = [];
+let filteredTenders = [];
 let currentDateMode = 'all';
 
 let currentSortColumn = 'publish_date';
@@ -17,7 +18,23 @@ let currentSortDirection = 'desc';
 
 let selectedCategories = new Set();
 let availableCategoriesList = [];
-const categoryColorCache = {};
+
+// ПАГИНАЦИЯ
+let currentPage = 1;
+const PAGE_SIZE = 50;
+
+// УНИКАЛЬНАЯ ПАЛИТРА ЦВЕТОВ ДЛЯ КАЖДОЙ КАТЕГОРИИ (9 фиксированных темных тонов)
+const CATEGORY_PALETTE = {
+  'Էլեկտրոնային աճուրդ': { bg: 'rgba(14, 116, 144, 0.4)', border: '#06b6d4', color: '#67e8f9' },           // Бирюзовый
+  'Բաց մրցույթ': { bg: 'rgba(21, 128, 61, 0.4)', border: '#22c55e', color: '#86efac' },                  // Зеленый
+  'Գնանշման հարցում': { bg: 'rgba(180, 83, 9, 0.4)', border: '#f59e0b', color: '#fde047' },                 // Янтарный/Желтый
+  'Երկփուլ մրցույթի նախաորակավորում': { bg: 'rgba(109, 40, 217, 0.4)', border: '#8b5cf6', color: '#ddd6fe' }, // Фиолетовый
+  'Բաց մրցույթի նախաորակավորում': { bg: 'rgba(13, 148, 136, 0.4)', border: '#14b8a6', color: '#99f6e4' },    // Мятный/Тиловый
+  'Գնանշման հարցման նախաորակավորում': { bg: 'rgba(190, 24, 93, 0.4)', border: '#ec4899', color: '#fbcfe8' },  // Розовый
+  'Փակ նպատակային մրցույթի նախաորակավորում': { bg: 'rgba(185, 28, 28, 0.4)', border: '#ef4444', color: '#fca5a5' }, // Красный
+  'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(161, 98, 7, 0.4)', border: '#eab308', color: '#fef08a' }, // Лайм/Оливковый
+  'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(67, 56, 202, 0.4)', border: '#6366f1', color: '#c7d2fe' } // Индиго
+};
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
 window.addEventListener('DOMContentLoaded', () => {
@@ -25,7 +42,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setDateFilter('all');
   loadTenders();
 
-  // Закрытие выпадающего окна категорий при клике вне его
   window.addEventListener('click', (e) => {
     const dropdown = document.getElementById('categoryDropdown');
     if (dropdown && !e.target.closest('.th-dropdown-container')) {
@@ -34,24 +50,11 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ====== ГЕНЕРАЦИЯ ЦВЕТОВ КАТЕГОРИЙ ======
+// ====== СТИЛИ КАТЕГОРИЙ ======
 function getCategoryBadgeStyle(categoryName) {
-  if (!categoryName) categoryName = 'Общее';
-  if (categoryColorCache[categoryName]) return categoryColorCache[categoryName];
-
-  let hash = 0;
-  for (let i = 0; i < categoryName.length; i++) {
-    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  const hue = Math.abs(hash) % 360;
-  const bgColor = `hsla(${hue}, 65%, 22%, 0.6)`;
-  const borderColor = `hsla(${hue}, 65%, 45%, 0.8)`;
-  const textColor = `hsl(${hue}, 80%, 75%)`;
-
-  const styleString = `background: ${bgColor}; border-color: ${borderColor}; color: ${textColor};`;
-  categoryColorCache[categoryName] = styleString;
-  return styleString;
+  const cat = categoryName || 'Общее';
+  const palette = CATEGORY_PALETTE[cat] || { bg: 'rgba(71, 85, 105, 0.4)', border: '#94a3b8', color: '#cbd5e1' };
+  return `background: ${palette.bg}; border: 1px solid ${palette.border}; color: ${palette.color};`;
 }
 
 // ====== ЗАГРУЗКА ИЗ SUPABASE ======
@@ -79,9 +82,7 @@ async function loadTenders() {
       if (data && data.length > 0) {
         fetchedData = fetchedData.concat(data);
         from += step;
-        if (data.length < step) {
-          hasMore = false;
-        }
+        if (data.length < step) hasMore = false;
       } else {
         hasMore = false;
       }
@@ -103,7 +104,6 @@ function initCategoriesFilterList() {
     catSet.add(item.category || 'Общее');
   });
   availableCategoriesList = Array.from(catSet).sort();
-
   selectedCategories = new Set(availableCategoriesList);
 
   const container = document.getElementById('categoryCheckboxesList');
@@ -177,6 +177,7 @@ function updateSortIcons() {
 
 function applyFilters() {
   updateSortIcons();
+  currentPage = 1; // Сбрасываем пагинацию при изменении фильтров
 
   const search = document.getElementById('searchInput').value.toLowerCase();
   const statusVal = document.getElementById('statusFilter').value;
@@ -187,7 +188,7 @@ function applyFilters() {
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-  let filtered = allTenders.filter(item => {
+  filteredTenders = allTenders.filter(item => {
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
     if (currentDateMode === 'custom' && customDateVal && item.publish_date !== customDateVal) return false;
@@ -204,7 +205,8 @@ function applyFilters() {
     return true;
   });
 
-  filtered.sort((a, b) => {
+  // Полная сортировка отфильтрованного массива (Дата + Время)
+  filteredTenders.sort((a, b) => {
     let valA, valB;
 
     if (currentSortColumn === 'publish_date') {
@@ -224,12 +226,23 @@ function applyFilters() {
   });
 
   const log = document.getElementById('statusLog');
-  log.innerHTML = `<i data-lucide="check-circle-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; color: var(--success);"></i> Отображается тендеров: <b>${filtered.length}</b> (всего в базе: ${allTenders.length})`;
+  log.innerHTML = `<i data-lucide="check-circle-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; color: var(--success);"></i> Отображается тендеров: <b>${filteredTenders.length}</b> (всего в базе: ${allTenders.length})`;
 
-  renderTable(filtered);
+  renderCurrentPage();
 }
 
-// ====== РЕНДЕР ТАБЛИЦЫ ======
+// ====== РЕНДЕР ТАБЛИЦЫ И ПАГИНАЦИИ ======
+function renderCurrentPage() {
+  const totalPages = Math.ceil(filteredTenders.length / PAGE_SIZE) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const pageData = filteredTenders.slice(startIdx, startIdx + PAGE_SIZE);
+
+  renderTable(pageData);
+  renderPaginationControls(totalPages, startIdx, pageData.length);
+}
+
 function renderTable(data) {
   const tbody = document.getElementById('tendersBody');
   if (data.length === 0) {
@@ -257,7 +270,6 @@ function renderTable(data) {
     }
 
     const catName = item.category || 'Общее';
-    
     let pubTimeStr = item.publish_time || (item.created_at ? item.created_at.split('T')[1].substring(0, 5) : '--:--');
     let dlTimeStr = item.deadline_time || '--:--';
 
@@ -300,6 +312,43 @@ function renderTable(data) {
   lucide.createIcons();
 }
 
+function renderPaginationControls(totalPages, startIdx, countOnPage) {
+  let container = document.getElementById('paginationContainer');
+  if (!container) {
+    const tableContainer = document.querySelector('.table-container') || document.querySelector('table').parentNode;
+    container = document.createElement('div');
+    container.id = 'paginationContainer';
+    container.className = 'pagination-container';
+    tableContainer.after(container);
+  }
+
+  if (filteredTenders.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const endIdx = startIdx + countOnPage;
+
+  container.innerHTML = `
+    <div class="pagination-info">
+      Показаны <b>${startIdx + 1}–${endIdx}</b> из <b>${filteredTenders.length}</b>
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>« Первая</button>
+      <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Назад</button>
+      <span class="pagination-page-indicator">${currentPage} / ${totalPages}</span>
+      <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Вперед ›</button>
+      <button class="pagination-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>Последняя »</button>
+    </div>
+  `;
+}
+
+function changePage(newPage) {
+  currentPage = newPage;
+  renderCurrentPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======
 async function updateStatus(id, newStatus) {
   const { error } = await supabaseClient
@@ -318,7 +367,7 @@ async function updateStatus(id, newStatus) {
 
 // ====== ЭКСПОРТ И ПАРСИНГ ======
 function exportToExcel() {
-  const rows = allTenders.map(t => ({
+  const rows = filteredTenders.map(t => ({
     'Дата публикации': t.publish_date,
     'Время публикации': t.publish_time || (t.created_at ? t.created_at.split('T')[1]?.substring(0, 5) || '' : ''),
     'Дата окончания': t.deadline_date || '',

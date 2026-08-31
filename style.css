@@ -122,3 +122,69 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
 .category-checkbox-item input { cursor: pointer; }
 
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Перенос категорий на 2 строки */
+.category-badge {
+  white-space: normal !important;
+  word-break: break-word;
+  line-height: 1.25;
+  text-align: center;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 190px;
+  min-width: 120px;
+  font-size: 0.8rem;
+}
+
+/* Блок пагинации под таблицей */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--bg-card, #1e293b);
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.pagination-info {
+  font-size: 0.9rem;
+  color: var(--muted, #94a3b8);
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pagination-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-page-indicator {
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0 8px;
+  color: #fff;
+}
