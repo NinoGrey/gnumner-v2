@@ -23,17 +23,17 @@ let availableCategoriesList = [];
 let currentPage = 1;
 const PAGE_SIZE = 50;
 
-// УНИКАЛЬНАЯ ПАЛИТРА ЦВЕТОВ ДЛЯ КАЖДОЙ КАТЕГОРИИ (9 фиксированных темных тонов)
+// ЦВЕТОВАЯ ПАЛИТРА КАТЕГОРИЙ
 const CATEGORY_PALETTE = {
-  'Էլեկտրոնային աճուրդ': { bg: 'rgba(14, 116, 144, 0.4)', border: '#06b6d4', color: '#67e8f9' },           // Бирюзовый
-  'Բաց մրցույթ': { bg: 'rgba(21, 128, 61, 0.4)', border: '#22c55e', color: '#86efac' },                  // Зеленый
-  'Գնանշման հարցում': { bg: 'rgba(180, 83, 9, 0.4)', border: '#f59e0b', color: '#fde047' },                 // Янтарный/Желтый
-  'Երկփուլ մրցույթի նախաորակավորում': { bg: 'rgba(109, 40, 217, 0.4)', border: '#8b5cf6', color: '#ddd6fe' }, // Фиолетовый
-  'Բաց մրցույթի նախաորակավորում': { bg: 'rgba(13, 148, 136, 0.4)', border: '#14b8a6', color: '#99f6e4' },    // Мятный/Тиловый
-  'Գնանշման հարցման նախաորակավորում': { bg: 'rgba(190, 24, 93, 0.4)', border: '#ec4899', color: '#fbcfe8' },  // Розовый
-  'Փակ նպատակային մրցույթի նախաորակավորում': { bg: 'rgba(185, 28, 28, 0.4)', border: '#ef4444', color: '#fca5a5' }, // Красный
-  'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(161, 98, 7, 0.4)', border: '#eab308', color: '#fef08a' }, // Лайм/Оливковый
-  'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(67, 56, 202, 0.4)', border: '#6366f1', color: '#c7d2fe' } // Индиго
+  'Էլեկտրոնային աճուրդ': { bg: 'rgba(14, 116, 144, 0.4)', border: '#06b6d4', color: '#67e8f9' },
+  'Բաց մրցույթ': { bg: 'rgba(21, 128, 61, 0.4)', border: '#22c55e', color: '#86efac' },
+  'Գնանշման հարցում': { bg: 'rgba(180, 83, 9, 0.4)', border: '#f59e0b', color: '#fde047' },
+  'Երկփուլ մրցույթի նախաորակավորում': { bg: 'rgba(109, 40, 217, 0.4)', border: '#8b5cf6', color: '#ddd6fe' },
+  'Բաց մրցույթի նախաորակավորում': { bg: 'rgba(13, 148, 136, 0.4)', border: '#14b8a6', color: '#99f6e4' },
+  'Գնանշման հարցման նախաորակավորում': { bg: 'rgba(190, 24, 93, 0.4)', border: '#ec4899', color: '#fbcfe8' },
+  'Փակ նպատակային մրցույթի նախաորակավորում': { bg: 'rgba(185, 28, 28, 0.4)', border: '#ef4444', color: '#fca5a5' },
+  'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(161, 98, 7, 0.4)', border: '#eab308', color: '#fef08a' },
+  'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(67, 56, 202, 0.4)', border: '#6366f1', color: '#c7d2fe' }
 };
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
@@ -177,7 +177,7 @@ function updateSortIcons() {
 
 function applyFilters() {
   updateSortIcons();
-  currentPage = 1; // Сбрасываем пагинацию при изменении фильтров
+  currentPage = 1;
 
   const search = document.getElementById('searchInput').value.toLowerCase();
   const statusVal = document.getElementById('statusFilter').value;
@@ -205,7 +205,6 @@ function applyFilters() {
     return true;
   });
 
-  // Полная сортировка отфильтрованного массива (Дата + Время)
   filteredTenders.sort((a, b) => {
     let valA, valB;
 
@@ -231,10 +230,11 @@ function applyFilters() {
   renderCurrentPage();
 }
 
-// ====== РЕНДЕР ТАБЛИЦЫ И ПАГИНАЦИИ ======
+// ====== РЕНДЕР ТАБЛИЦЫ И ДВОЙНОЙ ПАГИНАЦИИ ======
 function renderCurrentPage() {
   const totalPages = Math.ceil(filteredTenders.length / PAGE_SIZE) || 1;
   if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
 
   const startIdx = (currentPage - 1) * PAGE_SIZE;
   const pageData = filteredTenders.slice(startIdx, startIdx + PAGE_SIZE);
@@ -313,40 +313,80 @@ function renderTable(data) {
 }
 
 function renderPaginationControls(totalPages, startIdx, countOnPage) {
-  let container = document.getElementById('paginationContainer');
-  if (!container) {
-    const tableContainer = document.querySelector('.table-container') || document.querySelector('table').parentNode;
-    container = document.createElement('div');
-    container.id = 'paginationContainer';
-    container.className = 'pagination-container';
-    tableContainer.after(container);
+  const tableContainer = document.querySelector('.table-container') || document.querySelector('table').parentNode;
+
+  let topContainer = document.getElementById('paginationTop');
+  if (!topContainer) {
+    topContainer = document.createElement('div');
+    topContainer.id = 'paginationTop';
+    topContainer.className = 'pagination-container top-pagination';
+    tableContainer.before(topContainer);
+  }
+
+  let bottomContainer = document.getElementById('paginationBottom');
+  if (!bottomContainer) {
+    bottomContainer = document.createElement('div');
+    bottomContainer.id = 'paginationBottom';
+    bottomContainer.className = 'pagination-container bottom-pagination';
+    tableContainer.after(bottomContainer);
   }
 
   if (filteredTenders.length === 0) {
-    container.innerHTML = '';
+    topContainer.style.display = 'none';
+    bottomContainer.style.display = 'none';
     return;
   }
 
-  const endIdx = startIdx + countOnPage;
+  topContainer.style.display = 'flex';
+  bottomContainer.style.display = 'flex';
 
-  container.innerHTML = `
+  const endIdx = startIdx + countOnPage;
+  const htmlContent = `
     <div class="pagination-info">
       Показаны <b>${startIdx + 1}–${endIdx}</b> из <b>${filteredTenders.length}</b>
     </div>
     <div class="pagination-controls">
       <button class="pagination-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>« Первая</button>
       <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Назад</button>
-      <span class="pagination-page-indicator">${currentPage} / ${totalPages}</span>
+      
+      <div class="pagination-page-wrapper">
+        <input 
+          type="number" 
+          class="pagination-input" 
+          value="${currentPage}" 
+          min="1" 
+          max="${totalPages}" 
+          onkeydown="if(event.key==='Enter') jumpToPage(this.value, ${totalPages})"
+          onchange="jumpToPage(this.value, ${totalPages})"
+        />
+        <span>/ ${totalPages}</span>
+      </div>
+
       <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Вперед ›</button>
       <button class="pagination-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>Последняя »</button>
     </div>
   `;
+
+  topContainer.innerHTML = htmlContent;
+  bottomContainer.innerHTML = htmlContent;
+}
+
+function jumpToPage(value, totalPages) {
+  let page = parseInt(value, 10);
+  if (isNaN(page)) page = 1;
+  if (page < 1) page = 1;
+  if (page > totalPages) page = totalPages;
+
+  if (page !== currentPage) {
+    changePage(page);
+  } else {
+    renderCurrentPage();
+  }
 }
 
 function changePage(newPage) {
   currentPage = newPage;
   renderCurrentPage();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======

@@ -69,10 +69,24 @@ th:hover { color: #fff; }
 
 tr { transition: background-color 0.15s ease; }
 tr:hover { background: rgba(255,255,255,0.02); }
-tr.row-target { background: rgba(16, 185, 129, 0.04); }
-tr.row-target:hover { background: rgba(16, 185, 129, 0.08); }
-tr.row-ignore { background: rgba(239, 68, 68, 0.04); opacity: 0.65; }
-tr.row-ignore:hover { background: rgba(239, 68, 68, 0.08); opacity: 0.9; }
+/* Яркая подсветка строк статусов */
+tr.row-target {
+  background-color: rgba(34, 197, 94, 0.18) !important;
+  box-shadow: inset 4px 0 0 #22c55e;
+}
+tr.row-target:hover {
+  background-color: rgba(34, 197, 94, 0.28) !important;
+}
+
+tr.row-ignore {
+  background-color: rgba(239, 68, 68, 0.18) !important;
+  box-shadow: inset 4px 0 0 #ef4444;
+  opacity: 0.8;
+}
+tr.row-ignore:hover {
+  background-color: rgba(239, 68, 68, 0.28) !important;
+  opacity: 1;
+}
 
 .date-container { display: flex; flex-direction: column; gap: 4px; }
 .td-date { font-weight: 600; color: var(--text); font-size: 0.875rem; white-space: nowrap; }
@@ -138,20 +152,30 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
   font-size: 0.8rem;
 }
 
-/* Блок пагинации под таблицей */
+/* Стили двойной пагинации */
 .pagination-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 10px 20px;
   background: var(--bg-card, #1e293b);
-  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.pagination-container.top-pagination {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom: none;
+}
+
+.pagination-container.bottom-pagination {
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
 }
 
 .pagination-info {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--muted, #94a3b8);
 }
 
@@ -165,7 +189,7 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
   color: #fff;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
@@ -178,13 +202,45 @@ a.link:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05
 }
 
 .pagination-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-.pagination-page-indicator {
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 0 8px;
+/* Поле ввода номера страницы */
+.pagination-page-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--muted, #94a3b8);
+  font-weight: 500;
+  margin: 0 4px;
+}
+
+.pagination-input {
+  width: 52px;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+  border-radius: 6px;
   color: #fff;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.pagination-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.pagination-input::-webkit-inner-spin-button,
+.pagination-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.pagination-input[type=number] {
+  -moz-appearance: textfield;
 }
