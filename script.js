@@ -22,6 +22,9 @@ let availableCategoriesList = [];
 // Выбранные статусы для фильтрации (по умолчанию включены все 4)
 let selectedStatuses = new Set(['target', 'question', 'unprocessed', 'ignore']);
 
+// ID тендеров, статус которых был изменен в текущей сессии (чтобы не скрывать их мгновенно)
+let sessionModifiedIds = new Set();
+
 // ПАГИНАЦИЯ
 let currentPage = 1;
 const PAGE_SIZE = 100;
@@ -90,6 +93,7 @@ function getCategoryBadgeStyle(categoryName) {
 
 // ====== ЗАГРУЗКА ИЗ SUPABASE ======
 async function loadTenders() {
+  sessionModifiedIds.clear(); // Сбрасываем список измененных вручную при полной перезагрузке
   const log = document.getElementById('statusLog');
   log.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 1s linear infinite;"></i> Загрузка базы данных...`;
   lucide.createIcons();
@@ -192,6 +196,7 @@ function selectAllStatuses(select) {
 }
 
 function setDateFilter(mode) {
+  sessionModifiedIds.clear(); // При смене вкладок скрываем уже разобранные тендеры
   currentDateMode = mode;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
 
@@ -211,6 +216,7 @@ function setDateFilter(mode) {
 }
 
 function clearDateFilters() {
+  sessionModifiedIds.clear();
   document.getElementById('pubDateFrom').value = '';
   document.getElementById('pubDateTo').value = '';
   document.getElementById('deadlineDateFrom').value = '';
@@ -285,9 +291,9 @@ function applyFilters() {
       if (!item.deadline_date || item.deadline_date > dlTo) return false;
     }
 
-    // 4. Множественный фильтр по статусу
+    // 4. Множественный фильтр по статусу (Остается видимым, если изменен прямо сейчас)
     const itemStatus = item.user_status || 'unprocessed';
-    if (!selectedStatuses.has(itemStatus)) return false;
+    if (!selectedStatuses.has(itemStatus) && !sessionModifiedIds.has(item.id)) return false;
 
     // 5. Фильтр по категориям
     const cat = item.category || 'Общее';
@@ -499,6 +505,9 @@ function changePage(newPage) {
 
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======
 async function updateStatus(id, newStatus, btnElement) {
+  // Фиксируем, что статус был изменен в текущем сеансе
+  sessionModifiedIds.add(id);
+
   const { error } = await supabaseClient
     .from('tenders')
     .update({ user_status: newStatus })
@@ -512,11 +521,7 @@ async function updateStatus(id, newStatus, btnElement) {
   const target = allTenders.find(x => x.id === id);
   if (target) target.user_status = newStatus;
 
-  if (!selectedStatuses.has(newStatus)) {
-    applyFilters();
-    return;
-  }
-
+  // Визуально меняем подсвечивание строки прямо в DOM
   if (btnElement) {
     const tr = btnElement.closest('tr');
     if (tr) {
