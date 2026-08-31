@@ -180,8 +180,6 @@ function updateSortIcons() {
 // ====== ФИЛЬТРЫ И СОРТИРОВКА ======
 function applyFilters() {
   updateSortIcons();
-  // Убираем жесткий сброс currentPage = 1 отсюда, 
-  // чтобы страница сохранялась при смене статусов
 
   const search = document.getElementById('searchInput').value.toLowerCase();
   const statusVal = document.getElementById('statusFilter').value;
@@ -283,6 +281,7 @@ function renderTable(data) {
     const catName = item.category || 'Общее';
     let pubTimeStr = item.publish_time || (item.created_at ? item.created_at.split('T')[1].substring(0, 5) : '--:--');
     let dlTimeStr = item.deadline_time || '--:--';
+    const currentStatus = item.user_status || 'unprocessed';
 
     return `
       <tr class="${rowClass}">
@@ -305,13 +304,16 @@ function renderTable(data) {
         </td>
         <td class="td-title">${item.title}</td>
         <td>
-          <div class="status-select-wrapper">
-            <select class="status-select status-${item.user_status || 'unprocessed'}" onchange="updateStatus('${item.id}', this.value, this)">
-              <option value="unprocessed" ${!item.user_status || item.user_status === 'unprocessed' ? 'selected' : ''}>Рассмотреть</option>
-              <option value="target" ${item.user_status === 'target' ? 'selected' : ''}>Целевой</option>
-              <option value="ignore" ${item.user_status === 'ignore' ? 'selected' : ''}>Нецелевой</option>
-            </select>
-            <i data-lucide="chevron-down" class="status-select-icon"></i>
+          <div class="status-segmented-control">
+            <button class="status-seg-btn seg-ignore ${currentStatus === 'ignore' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'ignore', this)" title="Нецелевой">
+              <i data-lucide="x" class="icon-sm"></i>
+            </button>
+            <button class="status-seg-btn seg-unprocessed ${currentStatus === 'unprocessed' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'unprocessed', this)" title="На рассмотрении">
+              <i data-lucide="minus" class="icon-sm"></i>
+            </button>
+            <button class="status-seg-btn seg-target ${currentStatus === 'target' ? 'active' : ''}" onclick="updateStatus('${item.id}', 'target', this)" title="Целевой">
+              <i data-lucide="check" class="icon-sm"></i>
+            </button>
           </div>
         </td>
         <td>
@@ -404,7 +406,7 @@ function changePage(newPage) {
 }
 
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======
-async function updateStatus(id, newStatus, selectElement) {
+async function updateStatus(id, newStatus, btnElement) {
   const { error } = await supabaseClient
     .from('tenders')
     .update({ user_status: newStatus })
@@ -426,13 +428,18 @@ async function updateStatus(id, newStatus, selectElement) {
   }
 
   // Локальное обновление DOM без перерисовки всей таблицы (спасает от скачков и сброса Google Translate)
-  if (selectElement) {
-    const tr = selectElement.closest('tr');
+  if (btnElement) {
+    const tr = btnElement.closest('tr');
     if (tr) {
       tr.className = '';
       if (newStatus === 'target') tr.classList.add('row-target');
       if (newStatus === 'ignore') tr.classList.add('row-ignore');
-      selectElement.className = `status-select status-${newStatus}`;
+
+      const container = btnElement.closest('.status-segmented-control');
+      if (container) {
+        container.querySelectorAll('.status-seg-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
     }
   }
 }
