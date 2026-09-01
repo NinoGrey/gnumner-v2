@@ -52,7 +52,7 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   
   /* Тонкий контур без верхней яркой рамки */
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  
   box-shadow: 
     0 8px 32px 0 rgba(0, 0, 0, 0.37),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
@@ -62,7 +62,6 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
 
 .stats-summary:hover {
   background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 
     0 12px 40px 0 rgba(0, 0, 0, 0.45),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
@@ -90,7 +89,7 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
 .stat-chip.stat-total {
   color: var(--text);
   background: rgba(15, 23, 42, 0.3);
-  border-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .stat-chip.stat-ignore { 
