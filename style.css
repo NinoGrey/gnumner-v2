@@ -31,7 +31,6 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
 .btn-excel:hover { background: var(--success-hover); }
 .icon-sm { width: 16px; height: 16px; vertical-align: middle; }
 
-/* Плавающий счетчик статусов */
 /* --- ПЛАВАЮЩАЯ ПЛАШКА В СТИЛЕ LIQUID GLASS --- */
 .stats-summary {
   position: sticky;
@@ -51,12 +50,11 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   
-  /* Объемная многослойная градиентная рамка и тени */
+  /* Без агрессивной верхней рамки, только тонкий контур */
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 
     0 8px 32px 0 rgba(0, 0, 0, 0.37),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
     
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -66,21 +64,16 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 
     0 12px 40px 0 rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
-.stat-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 0.85rem;
+
+/* Прозрачный чип для общего счетчика («Всего») */
+.stat-chip.stat-total {
+  color: var(--text);
   background: rgba(15, 23, 42, 0.3);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
 }
-
 .stat-label {
   color: var(--muted);
   font-size: 0.8rem;
