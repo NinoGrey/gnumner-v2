@@ -543,7 +543,7 @@ async function updateStatus(id, newStatus, btnElement) {
 
 // ====== ОБНОВЛЕНИЕ СЧЕТЧИКА СТАТУСОВ ======
 function updateStatsSummary() {
-  const container = document.getElementById('statsSummary');
+  const container = document.getElementById('statsChips');
   if (!container) return;
 
   const counts = {

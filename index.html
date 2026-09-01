@@ -40,14 +40,51 @@
     </div>
   </header>
 
-  <!-- Плавающий динамический счетчик статусов -->
-  <div id="statsSummary" class="stats-summary"></div>
+  <!-- Плавающий динамический счетчик статусов и фильтр -->
+  <div class="stats-summary" id="statsSummary">
+    <!-- Сюда JS будет вставлять чипы со статистикой -->
+    <div id="statsChips" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;"></div>
+    
+    <!-- Множественный фильтр статусов с галочками (перенесен сюда) -->
+    <div class="status-dropdown-wrapper" style="position: relative; margin-left: auto;">
+      <button class="custom-select" onclick="toggleStatusDropdown(event)" style="display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="filter" class="icon-sm"></i>
+        <span>Статусы</span>
+        <i data-lucide="chevron-down" class="select-icon" style="position: static; transform: none;"></i>
+      </button>
+      <!-- Добавлено style="right: 0; left: auto;" чтобы выпадающее меню не уезжало за правый край экрана -->
+      <div id="statusDropdown" class="category-dropdown-content" onclick="event.stopPropagation()" style="right: 0; left: auto; min-width: 200px;">
+        <div class="dropdown-actions">
+          <span onclick="selectAllStatuses(true)" class="dropdown-link">Выбрать все</span>
+          <span onclick="selectAllStatuses(false)" class="dropdown-link">Сбросить</span>
+        </div>
+        <div id="statusCheckboxesList">
+          <label class="category-checkbox-item">
+            <input type="checkbox" value="target" checked onchange="handleStatusCheckboxChange(this)">
+            <span class="status-seg-btn seg-target active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Целевые</span>
+          </label>
+          <label class="category-checkbox-item">
+            <input type="checkbox" value="question" checked onchange="handleStatusCheckboxChange(this)">
+            <span class="status-seg-btn seg-question active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">На проверку</span>
+          </label>
+          <label class="category-checkbox-item">
+            <input type="checkbox" value="unprocessed" checked onchange="handleStatusCheckboxChange(this)">
+            <span class="status-seg-btn seg-unprocessed active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">На рассмотрении</span>
+          </label>
+          <label class="category-checkbox-item">
+            <input type="checkbox" value="ignore" checked onchange="handleStatusCheckboxChange(this)">
+            <span class="status-seg-btn seg-ignore active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Нецелевые</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <span id="statusLog">Загрузка данных...</span>
 
   <div class="controls">
     <div class="controls-top">
-      <!-- Вкладки дат с кнопкой Позавчера -->
+      <!-- Вкладки дат -->
       <div class="tabs">
         <button class="tab" id="tabToday" onclick="setDateFilter('today')">Сегодня</button>
         <button class="tab" id="tabYesterday" onclick="setDateFilter('yesterday')">Вчера</button>
@@ -55,45 +92,7 @@
         <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
       </div>
 
-      <input type="date" id="customDate" class="custom-date-picker" onchange="setDateFilter('custom')">
-      
-      <!-- Множественный фильтр статусов с галочками -->
-      <div class="status-dropdown-wrapper" style="position: relative;">
-        <button class="custom-select" onclick="toggleStatusDropdown(event)" style="display: flex; align-items: center; gap: 8px;">
-          <i data-lucide="filter" class="icon-sm"></i>
-          <span>Статусы</span>
-          <i data-lucide="chevron-down" class="select-icon" style="position: static; transform: none;"></i>
-        </button>
-        <div id="statusDropdown" class="category-dropdown-content" onclick="event.stopPropagation()">
-          <div class="dropdown-actions">
-            <span onclick="selectAllStatuses(true)" class="dropdown-link">Выбрать все</span>
-            <span onclick="selectAllStatuses(false)" class="dropdown-link">Сбросить</span>
-          </div>
-          <div id="statusCheckboxesList">
-            <label class="category-checkbox-item">
-              <input type="checkbox" value="target" checked onchange="handleStatusCheckboxChange(this)">
-              <span class="status-seg-btn seg-target active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Целевые</span>
-            </label>
-            <label class="category-checkbox-item">
-              <input type="checkbox" value="question" checked onchange="handleStatusCheckboxChange(this)">
-              <span class="status-seg-btn seg-question active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">На проверку</span>
-            </label>
-            <label class="category-checkbox-item">
-              <input type="checkbox" value="unprocessed" checked onchange="handleStatusCheckboxChange(this)">
-              <span class="status-seg-btn seg-unprocessed active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">На рассмотрении</span>
-            </label>
-            <label class="category-checkbox-item">
-              <input type="checkbox" value="ignore" checked onchange="handleStatusCheckboxChange(this)">
-              <span class="status-seg-btn seg-ignore active" style="padding: 2px 8px; font-size: 12px; pointer-events: none;">Нецелевые</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Общий контейнер для диапазонов дат и кнопки сброса -->
-    <div class="filters-date-ranges-wrapper" style="display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-top: 10px;">
-      <!-- Публикация С - По -->
+      <!-- Поля с диапазонами дат перенесены в одну строку с кнопками. Выбор одиночной даты удален. -->
       <div class="date-range-group" style="display: flex; align-items: center; gap: 6px;">
         <span style="font-size: 13px; color: var(--muted);">Публикация: с</span>
         <input type="date" id="pubDateFrom" onchange="applyFilters()" class="date-input" />
@@ -101,7 +100,6 @@
         <input type="date" id="pubDateTo" onchange="applyFilters()" class="date-input" />
       </div>
 
-      <!-- Дедлайн С - По -->
       <div class="date-range-group" style="display: flex; align-items: center; gap: 6px;">
         <span style="font-size: 13px; color: var(--muted);">Дедлайн: с</span>
         <input type="date" id="deadlineDateFrom" onchange="applyFilters()" class="date-input" />
@@ -119,7 +117,7 @@
       </div>
     </div>
   </div>
-
+  
   <div class="table-container">
     <table>
       <thead>
