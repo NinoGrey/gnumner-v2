@@ -90,8 +90,7 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
 .stat-chip.stat-total {
   color: var(--text);
   background: rgba(15, 23, 42, 0.3);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .stat-chip.stat-ignore { 
