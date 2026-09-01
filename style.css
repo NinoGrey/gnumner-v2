@@ -31,6 +31,7 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
 .btn-excel:hover { background: var(--success-hover); }
 .icon-sm { width: 16px; height: 16px; vertical-align: middle; }
 
+
 /* --- ПЛАВАЮЩАЯ ПЛАШКА В СТИЛЕ LIQUID GLASS --- */
 .stats-summary {
   position: sticky;
@@ -50,7 +51,7 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   
-  /* Без агрессивной верхней рамки, только тонкий контур */
+  /* Тонкий контур без верхней яркой рамки */
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
     0 8px 32px 0 rgba(0, 0, 0, 0.37),
@@ -67,20 +68,30 @@ h1 { font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.025em;
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 /* Прозрачный чип для общего счетчика («Всего») */
 .stat-chip.stat-total {
   color: var(--text);
   background: rgba(15, 23, 42, 0.3);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-}
-.stat-label {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
-.stat-chip.stat-total { 
-  color: var(--text); 
 }
 
 .stat-chip.stat-ignore { 
