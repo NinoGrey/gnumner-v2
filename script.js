@@ -1,3 +1,4 @@
+// script.js
 // ====== КОНФИГУРАЦИЯ ======
 const SUPABASE_URL = 'https://pkjrjtwlryuuconrpcnx.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_QfqhRHEjHYp_xA1nC_y7AQ__4pDx3-F';
@@ -22,15 +23,15 @@ let availableCategoriesList = [];
 // Выбранные статусы для фильтрации (по умолчанию включены все 4)
 let selectedStatuses = new Set(['target', 'question', 'unprocessed', 'ignore']);
 
-// ID тендеров, статус которых был изменен в текущей сессии (чтобы не скрывать их мгновенно)
+// ID тендеров, статус которых был изменен в текущей сессии
 let sessionModifiedIds = new Set();
 
 // ПАГИНАЦИЯ
 let currentPage = 1;
 const PAGE_SIZE = 100;
 
-// ЦВЕТОВАЯ ПАЛИТРА КАТЕГОРИЙ
-const CATEGORY_PALETTE = {
+// ЦВЕТОВАЯ ПАЛИТРА КАТЕГОРИЙ (ТЕМНАЯ И СВЕТЛАЯ)
+const CATEGORY_PALETTE_DARK = {
   'Էլեկտրոնային աճուրդ': { bg: 'rgba(14, 116, 144, 0.4)', border: '#06b6d4', color: '#67e8f9' },
   'Բաց մրցույթ': { bg: 'rgba(21, 128, 61, 0.4)', border: '#22c55e', color: '#86efac' },
   'Գնանշման հարցում': { bg: 'rgba(180, 83, 9, 0.4)', border: '#f59e0b', color: '#fde047' },
@@ -41,6 +42,45 @@ const CATEGORY_PALETTE = {
   'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(161, 98, 7, 0.4)', border: '#eab308', color: '#fef08a' },
   'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(67, 56, 202, 0.4)', border: '#6366f1', color: '#c7d2fe' }
 };
+
+const CATEGORY_PALETTE_LIGHT = {
+  'Էլեկտրոնային աճուրդ': { bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(8, 145, 178, 0.4)', color: '#0e7490' },
+  'Բաց մրցույթ': { bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(22, 163, 74, 0.4)', color: '#15803d' },
+  'Գնանշման հարցում': { bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(217, 119, 6, 0.4)', color: '#b45309' },
+  'Երկփուլ մրցույթի նախաորակավորում': { bg: 'rgba(139, 92, 246, 0.15)', border: 'rgba(124, 58, 237, 0.4)', color: '#6d28d9' },
+  'Բաց մրցույթի նախաորակավորում': { bg: 'rgba(20, 184, 166, 0.15)', border: 'rgba(13, 148, 136, 0.4)', color: '#0f766e' },
+  'Գնանշման հարցման նախաորակավորում': { bg: 'rgba(236, 72, 153, 0.15)', border: 'rgba(219, 39, 119, 0.4)', color: '#be185d' },
+  'Փակ նպատակային մրցույթի նախաորակավորում': { bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(220, 38, 38, 0.4)', color: '#b91c1c' },
+  'Փակ պարբերական մրցույթի նախաորակավորում': { bg: 'rgba(234, 179, 8, 0.15)', border: 'rgba(202, 138, 4, 0.4)', color: '#a16207' },
+  'Փակ պարբերական մրցույթի սկզբնական պայմանագրեր': { bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(79, 70, 229, 0.4)', color: '#4338ca' }
+};
+
+// ====== ТЕМА (СВЕТЛАЯ / ТЕМНАЯ) ======
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeIcon(savedTheme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcon(newTheme);
+  
+  // Обновляем плашки категорий и перерисовываем таблицу под новую схему
+  initCategoriesFilterList();
+  applyFilters();
+}
+
+function updateThemeIcon(theme) {
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.setAttribute('data-lucide', theme === 'light' ? 'moon' : 'sun');
+    lucide.createIcons();
+  }
+}
 
 // ====== КЛЮЧЕВЫЕ СЛОВА ДЛЯ ПОДСВЕТКИ ======
 const GREEN_KEYWORDS = ['համազգեստ','հագուստ', 'Կոշիկ','Հանդերձանք','արտահագուստ','կտոր','Կիսաբաճկոն','բաճկոն','Խալաթ','Անկողնային','Սավան'];
@@ -67,6 +107,7 @@ function highlightKeywords(titleText) {
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
 window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   lucide.createIcons();
   setDateFilter('all');
   loadTenders();
@@ -87,13 +128,17 @@ window.addEventListener('DOMContentLoaded', () => {
 // ====== СТИЛИ КАТЕГОРИЙ ======
 function getCategoryBadgeStyle(categoryName) {
   const cat = categoryName || 'Общее';
-  const palette = CATEGORY_PALETTE[cat] || { bg: 'rgba(71, 85, 105, 0.4)', border: '#94a3b8', color: '#cbd5e1' };
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const paletteMap = isLight ? CATEGORY_PALETTE_LIGHT : CATEGORY_PALETTE_DARK;
+  const palette = paletteMap[cat] || (isLight 
+    ? { bg: 'rgba(203, 213, 225, 0.4)', border: '#94a3b8', color: '#334155' }
+    : { bg: 'rgba(71, 85, 105, 0.4)', border: '#94a3b8', color: '#cbd5e1' });
   return `background: ${palette.bg}; border: 1px solid ${palette.border}; color: ${palette.color};`;
 }
 
 // ====== ЗАГРУЗКА ИЗ SUPABASE ======
 async function loadTenders() {
-  sessionModifiedIds.clear(); // Сбрасываем список измененных вручную при полной перезагрузке
+  sessionModifiedIds.clear();
   const log = document.getElementById('statusLog');
   log.innerHTML = `<i data-lucide="loader-2" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px; animation: spin 1s linear infinite;"></i> Загрузка базы данных...`;
   lucide.createIcons();
@@ -139,15 +184,20 @@ function initCategoriesFilterList() {
     catSet.add(item.category || 'Общее');
   });
   availableCategoriesList = Array.from(catSet).sort();
-  selectedCategories = new Set(availableCategoriesList);
+  
+  if (selectedCategories.size === 0) {
+    selectedCategories = new Set(availableCategoriesList);
+  }
 
   const container = document.getElementById('categoryCheckboxesList');
-  container.innerHTML = availableCategoriesList.map(cat => `
-    <label class="category-checkbox-item">
-      <input type="checkbox" value="${cat}" checked onchange="handleCategoryCheckboxChange(this)">
-      <span class="category-badge" style="${getCategoryBadgeStyle(cat)}">${cat}</span>
-    </label>
-  `).join('');
+  if (container) {
+    container.innerHTML = availableCategoriesList.map(cat => `
+      <label class="category-checkbox-item">
+        <input type="checkbox" value="${cat}" ${selectedCategories.has(cat) ? 'checked' : ''} onchange="handleCategoryCheckboxChange(this)">
+        <span class="category-badge" style="${getCategoryBadgeStyle(cat)}">${cat}</span>
+      </label>
+    `).join('');
+  }
 }
 
 function toggleCategoryDropdown(event) {
@@ -172,7 +222,6 @@ function selectAllCategories(select) {
   applyFilters();
 }
 
-// Управление фильтром статусов
 function toggleStatusDropdown(event) {
   event.stopPropagation();
   document.getElementById('statusDropdown').classList.toggle('show');
@@ -196,7 +245,7 @@ function selectAllStatuses(select) {
 }
 
 function setDateFilter(mode) {
-  sessionModifiedIds.clear(); // При смене вкладок скрываем уже разобранные тендеры
+  sessionModifiedIds.clear();
   currentDateMode = mode;
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
 
@@ -274,16 +323,13 @@ function applyFilters() {
   const dayBeforeStr = dayBefore.toISOString().split('T')[0];
 
   filteredTenders = allTenders.filter(item => {
-    // 1. Быстрые фильтры по дате публикации
     if (currentDateMode === 'today' && item.publish_date !== todayStr) return false;
     if (currentDateMode === 'yesterday' && item.publish_date !== yesterdayStr) return false;
     if (currentDateMode === 'dayBefore' && item.publish_date !== dayBeforeStr) return false;
 
-    // 2. Диапазон даты публикации (С - По)
     if (pubFrom && item.publish_date < pubFrom) return false;
     if (pubTo && item.publish_date > pubTo) return false;
 
-    // 3. Диапазон даты дедлайна (С - По)
     if (dlFrom) {
       if (!item.deadline_date || item.deadline_date < dlFrom) return false;
     }
@@ -291,15 +337,12 @@ function applyFilters() {
       if (!item.deadline_date || item.deadline_date > dlTo) return false;
     }
 
-    // 4. Множественный фильтр по статусу (Остается видимым, если изменен прямо сейчас)
     const itemStatus = item.user_status || 'unprocessed';
     if (!selectedStatuses.has(itemStatus) && !sessionModifiedIds.has(item.id)) return false;
 
-    // 5. Фильтр по категориям
     const cat = item.category || 'Общее';
     if (!selectedCategories.has(cat)) return false;
 
-    // 6. Текстовый поиск
     if (search) {
       const text = `${item.title} ${cat}`.toLowerCase();
       if (!text.includes(search)) return false;
@@ -505,7 +548,6 @@ function changePage(newPage) {
 
 // ====== ОБНОВЛЕНИЕ СТАТУСА ======
 async function updateStatus(id, newStatus, btnElement) {
-  // Фиксируем, что статус был изменен в текущем сеансе
   sessionModifiedIds.add(id);
 
   const { error } = await supabaseClient
@@ -521,7 +563,6 @@ async function updateStatus(id, newStatus, btnElement) {
   const target = allTenders.find(x => x.id === id);
   if (target) target.user_status = newStatus;
 
-  // Визуально меняем подсвечивание строки прямо в DOM
   if (btnElement) {
     const tr = btnElement.closest('tr');
     if (tr) {

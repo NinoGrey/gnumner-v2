@@ -1,14 +1,21 @@
-:root {
+/* style.css */
+:root, [data-theme="dark"] {
   --bg: #080c14;
+  --body-bg: 
+    radial-gradient(circle at 10% 10%, rgba(30, 27, 75, 0.8) 0%, transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(23, 37, 84, 0.8) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(15, 23, 42, 0.9) 0%, transparent 50%),
+    linear-gradient(180deg, #060911 0%, #0b1120 100%);
   --text: #f8fafc;
   --muted: #94a3b8;
   --primary: #3b82f6;
   --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
+  --h1-color: #fff;
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', sans-serif;
   
-  /* Переменные жидкого стекла iOS */
+  /* Переменные жидкого стекла iOS (Темная тема) */
   --glass-card: rgba(22, 32, 50, 0.45);
   --glass-card-hover: rgba(30, 44, 70, 0.6);
   --glass-element: rgba(255, 255, 255, 0.06);
@@ -16,11 +23,100 @@
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-border-hover: rgba(255, 255, 255, 0.28);
   
-  /* Эффекты размытия, свечения и преломления */
   --glass-blur: blur(24px) saturate(200%);
   --glass-blur-popover: blur(36px) saturate(220%);
   --glass-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2);
   --glass-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.4), 0 2px 6px 0 rgba(0, 0, 0, 0.2);
+
+  --btn-bg: rgba(59, 130, 246, 0.18);
+  --btn-text: #fff;
+  --btn-border: rgba(147, 197, 253, 0.25);
+  --btn-hover-bg: rgba(59, 130, 246, 0.32);
+
+  --btn-excel-bg: rgba(16, 185, 129, 0.18);
+  --btn-excel-text: #fff;
+  --btn-excel-border: rgba(110, 231, 183, 0.25);
+  --btn-excel-hover-bg: rgba(16, 185, 129, 0.32);
+
+  --input-bg: rgba(0, 0, 0, 0.25);
+  --input-bg-focus: rgba(0, 0, 0, 0.35);
+  --th-bg: rgba(0, 0, 0, 0.25);
+  --popover-bg: rgba(15, 23, 42, 0.85);
+  --tabs-bg: rgba(0, 0, 0, 0.35);
+  --tab-active-bg: rgba(255, 255, 255, 0.15);
+  --tab-active-color: #fff;
+  --tab-active-border: rgba(255, 255, 255, 0.25);
+  --link-color: #60a5fa;
+  --link-hover-color: #93c5fd;
+  --link-bg-hover: rgba(59, 130, 246, 0.2);
+  --date-picker-filter: invert(0.9) sepia(1) saturate(3) hue-rotate(180deg);
+  --table-border: rgba(255, 255, 255, 0.05);
+  --tr-hover: rgba(255, 255, 255, 0.04);
+  --checkbox-bg: rgba(0, 0, 0, 0.3);
+  --segmented-bg: rgba(0, 0, 0, 0.35);
+
+  --scrollbar-track: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.18);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+}
+
+/* === СВЕТЛАЯ ЦВЕТОВАЯ СХЕМА (LIQUID GLASS) === */
+[data-theme="light"] {
+  --bg: #f1f5f9;
+  --body-bg: 
+    radial-gradient(circle at 10% 10%, rgba(224, 231, 255, 0.85) 0%, transparent 45%),
+    radial-gradient(circle at 90% 20%, rgba(207, 250, 254, 0.85) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(243, 232, 255, 0.85) 0%, transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --success: #059669;
+  --danger: #dc2626;
+  --warning: #d97706;
+  --h1-color: #0f172a;
+
+  /* Переменные жидкого стекла iOS (Светлая тема) */
+  --glass-card: rgba(255, 255, 255, 0.65);
+  --glass-card-hover: rgba(255, 255, 255, 0.82);
+  --glass-element: rgba(255, 255, 255, 0.7);
+  --glass-element-hover: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-border-hover: rgba(148, 163, 184, 0.5);
+
+  --glass-highlight: inset 0 1px 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
+  --glass-shadow: 0 12px 32px 0 rgba(148, 163, 184, 0.18), 0 2px 6px 0 rgba(148, 163, 184, 0.08);
+
+  --btn-bg: rgba(37, 99, 235, 0.12);
+  --btn-text: #1e40af;
+  --btn-border: rgba(37, 99, 235, 0.25);
+  --btn-hover-bg: rgba(37, 99, 235, 0.22);
+
+  --btn-excel-bg: rgba(16, 185, 129, 0.12);
+  --btn-excel-text: #065f46;
+  --btn-excel-border: rgba(16, 185, 129, 0.25);
+  --btn-excel-hover-bg: rgba(16, 185, 129, 0.22);
+
+  --input-bg: rgba(255, 255, 255, 0.65);
+  --input-bg-focus: rgba(255, 255, 255, 0.95);
+  --th-bg: rgba(241, 245, 249, 0.85);
+  --popover-bg: rgba(255, 255, 255, 0.92);
+  --tabs-bg: rgba(226, 232, 240, 0.7);
+  --tab-active-bg: rgba(255, 255, 255, 0.95);
+  --tab-active-color: #0f172a;
+  --tab-active-border: rgba(255, 255, 255, 1);
+  --link-color: #2563eb;
+  --link-hover-color: #1d4ed8;
+  --link-bg-hover: rgba(37, 99, 235, 0.15);
+  --date-picker-filter: none;
+  --table-border: rgba(0, 0, 0, 0.06);
+  --tr-hover: rgba(0, 0, 0, 0.025);
+  --checkbox-bg: rgba(255, 255, 255, 0.9);
+  --segmented-bg: rgba(226, 232, 240, 0.7);
+  
+  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
 }
 
 * { 
@@ -32,47 +128,44 @@
 
 /* --- СТЕКЛЯННЫЙ СКРОЛЛБАР iOS --- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--scrollbar-thumb);
   border-radius: 99px;
   border: 2px solid transparent;
   background-clip: padding-box;
   backdrop-filter: var(--glass-blur);
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.35); }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
 /* --- МНОГОСЛОЙНЫЙ ЖИВОЙ ФОН С ПРЕЛОМЛЕНИЕМ --- */
 body { 
-  background: 
-    radial-gradient(circle at 10% 10%, rgba(30, 27, 75, 0.8) 0%, transparent 45%),
-    radial-gradient(circle at 90% 20%, rgba(23, 37, 84, 0.8) 0%, transparent 45%),
-    radial-gradient(circle at 50% 85%, rgba(15, 23, 42, 0.9) 0%, transparent 50%),
-    linear-gradient(180deg, #060911 0%, #0b1120 100%);
+  background: var(--body-bg);
   background-attachment: fixed;
   color: var(--text); 
   padding: 24px; 
   -webkit-font-smoothing: antialiased; 
   min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .container { max-width: 1400px; margin: 0 auto; }
 
-/* --- ШАПКА С ЭФФЕКТУ ГЛЯНЦА --- */
+/* --- ШАПКА --- */
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px; }
 h1 { 
   font-size: 1.6rem; 
   font-weight: 700; 
-  color: #fff; 
+  color: var(--h1-color); 
   letter-spacing: -0.03em;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 
 /* --- КНОПКИ (LIQUID GLASS BUTTONS) --- */
 .btn {
-  background: rgba(59, 130, 246, 0.18); 
-  color: #fff; 
-  border: 1px solid rgba(147, 197, 253, 0.25); 
+  background: var(--btn-bg); 
+  color: var(--btn-text); 
+  border: 1px solid var(--btn-border); 
   padding: 10px 18px;
   border-radius: 12px; 
   font-weight: 600; 
@@ -84,27 +177,28 @@ h1 {
   font-size: 0.875rem;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-highlight), 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--glass-highlight), 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .btn:hover { 
-  background: rgba(59, 130, 246, 0.32); 
-  border-color: rgba(147, 197, 253, 0.5);
+  background: var(--btn-hover-bg); 
+  border-color: var(--btn-border);
   transform: translateY(-1px) scale(1.01); 
-  box-shadow: var(--glass-highlight), 0 6px 20px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--glass-highlight), 0 6px 20px rgba(59, 130, 246, 0.25);
 }
 
 .btn:active { transform: scale(0.97); }
 
 .btn-excel { 
-  background: rgba(16, 185, 129, 0.18); 
-  border-color: rgba(110, 231, 183, 0.25); 
+  background: var(--btn-excel-bg); 
+  color: var(--btn-excel-text);
+  border-color: var(--btn-excel-border); 
 }
 
 .btn-excel:hover { 
-  background: rgba(16, 185, 129, 0.32); 
-  border-color: rgba(110, 231, 183, 0.5);
-  box-shadow: var(--glass-highlight), 0 6px 20px rgba(16, 185, 129, 0.3);
+  background: var(--btn-excel-hover-bg); 
+  border-color: var(--btn-excel-border);
+  box-shadow: var(--glass-highlight), 0 6px 20px rgba(16, 185, 129, 0.25);
 }
 
 .icon-sm { width: 16px; height: 16px; vertical-align: middle; }
@@ -152,11 +246,19 @@ h1 {
   transition: all 0.2s ease;
 }
 
-.stat-chip.stat-total { color: var(--text); background: rgba(255, 255, 255, 0.08); }
-.stat-chip.stat-ignore { color: #fca5a5; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
-.stat-chip.stat-unprocessed { color: #cbd5e1; background: rgba(148, 163, 184, 0.15); border-color: rgba(148, 163, 184, 0.3); }
-.stat-chip.stat-question { color: #fde047; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); }
-.stat-chip.stat-target { color: #86efac; background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.3); }
+.stat-chip.stat-total { color: var(--text); background: var(--glass-element); }
+
+.stat-chip.stat-ignore { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); }
+[data-theme="light"] .stat-chip.stat-ignore { color: #dc2626; background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.25); }
+
+.stat-chip.stat-unprocessed { color: var(--muted); background: rgba(148, 163, 184, 0.15); border-color: rgba(148, 163, 184, 0.3); }
+[data-theme="light"] .stat-chip.stat-unprocessed { color: #475569; background: rgba(100, 116, 139, 0.12); border-color: rgba(100, 116, 139, 0.25); }
+
+.stat-chip.stat-question { color: #f59e0b; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); }
+[data-theme="light"] .stat-chip.stat-question { color: #d97706; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
+
+.stat-chip.stat-target { color: #10b981; background: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.3); }
+[data-theme="light"] .stat-chip.stat-target { color: #16a34a; background: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.25); }
 
 .btn-icon-filter {
   display: flex;
@@ -174,7 +276,7 @@ h1 {
 }
 
 .btn-icon-filter:hover {
-  color: #fff;
+  color: var(--text);
   background: var(--glass-element-hover);
   border-color: var(--glass-border-hover);
 }
@@ -199,12 +301,12 @@ h1 {
 /* Переключатель вкладок в стиле iOS Segmented Control */
 .tabs { 
   display: flex; 
-  background: rgba(0, 0, 0, 0.35); 
+  background: var(--tabs-bg); 
   padding: 3px; 
   border-radius: 12px; 
   border: 1px solid var(--glass-border); 
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .tab { 
@@ -219,31 +321,31 @@ h1 {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); 
 }
 
-.tab:hover { color: #fff; }
+.tab:hover { color: var(--text); }
 
 .tab.active { 
-  background: rgba(255, 255, 255, 0.15); 
-  color: #fff; 
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: var(--glass-highlight), 0 4px 12px rgba(0, 0, 0, 0.3); 
+  background: var(--tab-active-bg); 
+  color: var(--tab-active-color); 
+  border: 1px solid var(--tab-active-border);
+  box-shadow: var(--glass-highlight), 0 4px 12px rgba(0, 0, 0, 0.1); 
 }
 
 /* Стеклянные капсулы ввода дат */
 .native-date-range {
   display: inline-flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--input-bg);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 5px 14px;
   gap: 8px;
   transition: all 0.2s ease;
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .native-date-range:focus-within {
-  border-color: rgba(59, 130, 246, 0.6);
+  border-color: var(--primary);
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.25), var(--glass-highlight);
 }
 
@@ -260,14 +362,14 @@ h1 {
 }
 
 .native-date-range input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.9) sepia(1) saturate(3) hue-rotate(180deg);
+  filter: var(--date-picker-filter);
   opacity: 0.6;
   cursor: pointer;
 }
 
 /* Стеклянное поле поиска */
 input[type="text"] {
-  background: rgba(0, 0, 0, 0.25); 
+  background: var(--input-bg); 
   border: 1px solid var(--glass-border); 
   color: var(--text);
   padding: 11px 16px; 
@@ -277,14 +379,14 @@ input[type="text"] {
   transition: all 0.25s ease; 
   width: 100%;
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
 input[type="text"]::placeholder { color: var(--muted); }
 
 input[type="text"]:focus { 
-  border-color: rgba(59, 130, 246, 0.6); 
-  background: rgba(0, 0, 0, 0.35);
+  border-color: var(--primary); 
+  background: var(--input-bg-focus);
   box-shadow: 0 0 16px rgba(59, 130, 246, 0.25), var(--glass-highlight);
 }
 
@@ -303,13 +405,13 @@ input[type="text"]:focus {
 }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left; }
-th, td { padding: 16px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+th, td { padding: 16px 18px; border-bottom: 1px solid var(--table-border); vertical-align: middle; }
 td {
   position: relative;
   z-index: 1;
 }
 th { 
-  background: rgba(0, 0, 0, 0.25); 
+  background: var(--th-bg); 
   color: var(--muted); 
   font-weight: 600; 
   font-size: 0.75rem; 
@@ -322,12 +424,12 @@ th {
   position: relative;
   z-index: 10;
 }
-th:hover { color: #fff; }
+th:hover { color: var(--text); }
 .th-content { display: flex; align-items: center; gap: 6px; }
 .sort-icon { width: 14px; height: 14px; color: var(--muted); }
 
 tr { transition: background-color 0.2s ease; }
-tr:hover { background: rgba(255, 255, 255, 0.04); }
+tr:hover { background: var(--tr-hover); }
 
 /* Подсветка строк таблицы с жидким стеклянным оттенком */
 tr.row-target {
@@ -362,7 +464,7 @@ a.link {
   border: 1px solid var(--glass-border); 
   padding: 7px 14px; 
   border-radius: 10px; 
-  color: #60a5fa; 
+  color: var(--link-color); 
   text-decoration: none; 
   font-weight: 500; 
   display: inline-flex; 
@@ -373,9 +475,9 @@ a.link {
   box-shadow: var(--glass-highlight);
 }
 a.link:hover { 
-  border-color: rgba(96, 165, 250, 0.5); 
-  background: rgba(59, 130, 246, 0.2); 
-  color: #93c5fd;
+  border-color: var(--link-color); 
+  background: var(--link-bg-hover); 
+  color: var(--link-hover-color);
   transform: translateY(-1px);
 }
 
@@ -389,14 +491,14 @@ a.link:hover {
   position: absolute; 
   top: calc(100% + 10px); 
   left: 0;
-  background: rgba(15, 23, 42, 0.85); /* Слегка повысим плотность фона для читаемости */
+  background: var(--popover-bg);
   backdrop-filter: var(--glass-blur-popover);
   -webkit-backdrop-filter: var(--glass-blur-popover);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), var(--glass-highlight); 
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight); 
   border-radius: 16px; 
   padding: 16px;
-  z-index: 9999; /* Повышаем z-index выпадающего списка */
+  z-index: 9999;
   min-width: 250px; 
   text-transform: none; 
   font-weight: normal; 
@@ -411,12 +513,12 @@ a.link:hover {
 
 .category-dropdown-content.show { display: block; }
 .dropdown-actions { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--glass-border); font-size: 0.8rem; }
-.dropdown-link { color: #60a5fa; cursor: pointer; font-weight: 500; }
+.dropdown-link { color: var(--link-color); cursor: pointer; font-weight: 500; }
 .dropdown-link:hover { text-decoration: underline; }
 
 /* Кастомные стеклянные чекбоксы */
 .category-checkbox-item { 
-display: flex; 
+  display: flex; 
   align-items: center; 
   gap: 10px; 
   padding: 8px 8px; 
@@ -425,18 +527,18 @@ display: flex;
   border-radius: 8px;
   transition: background 0.15s;
 }
-.category-checkbox-item:hover { background: rgba(255, 255, 255, 0.08); }
+.category-checkbox-item:hover { background: var(--glass-element-hover); }
 
 .category-checkbox-item input[type="checkbox"] {
-appearance: none;
+  appearance: none;
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  min-width: 18px; /* Запрещаем чекбоксу сжиматься, если текст длинный */
+  min-width: 18px;
   min-height: 18px;
-  flex-shrink: 0;   /* Гарантирует сохранение размера 18x18px */
+  flex-shrink: 0;
   border: 1px solid var(--glass-border-hover);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--checkbox-bg);
   border-radius: 5px;
   outline: none;
   cursor: pointer;
@@ -448,7 +550,7 @@ appearance: none;
 
 .category-checkbox-item input[type="checkbox"]:checked {
   background: var(--primary);
-  border-color: rgba(147, 197, 253, 0.6);
+  border-color: var(--primary);
   box-shadow: var(--glass-highlight);
 }
 
@@ -461,7 +563,7 @@ appearance: none;
   height: 8px;
   border: solid white;
   border-width: 0 2px 2px 0;
-  transform: translate(-50%, -50%) rotate(45deg); /* Центрирует галочку строго по середине */
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 /* Категории (Стеклянные Плашки) */
@@ -518,7 +620,7 @@ appearance: none;
 .pagination-btn {
   background: var(--glass-element); 
   border: 1px solid var(--glass-border);
-  color: #fff; 
+  color: var(--text); 
   padding: 7px 14px; 
   border-radius: 10px; 
   cursor: pointer;
@@ -540,27 +642,27 @@ appearance: none;
 .pagination-input {
   width: 54px; 
   padding: 5px 6px; 
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--input-bg);
   border: 1px solid var(--glass-border); 
   border-radius: 8px; 
-  color: #fff;
+  color: var(--text);
   font-weight: 600; 
   text-align: center; 
   font-size: 0.85rem; 
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* --- СЕГМЕНТИРОВАННЫЕ ПЕРЕКЛЮЧАТЕЛИ СОСТОЯНИЯ В СТРОКАХ (iOS SEGMENTED TOGGLE) --- */
+/* --- СЕГМЕНТИРОВАННЫЕ ПЕРЕКЛЮЧАТЕЛИ СОСТОЯНИЯ В СТРОКАХ --- */
 .status-segmented-control {
   display: inline-flex;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--segmented-bg);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
   padding: 2px;
   gap: 2px;
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .status-seg-btn {
@@ -576,45 +678,64 @@ appearance: none;
   border-radius: 8px;
 }
 
-.status-seg-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.status-seg-btn:hover { color: var(--text); background: var(--glass-element-hover); }
 
 .status-seg-btn.seg-ignore.active { 
-  background: rgba(239, 68, 68, 0.3); 
-  color: #fca5a5; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.25); 
+  color: #dc2626; 
+  box-shadow: var(--glass-highlight), 0 2px 8px rgba(239, 68, 68, 0.2);
 }
+[data-theme="dark"] .status-seg-btn.seg-ignore.active, body:not([data-theme="light"]) .status-seg-btn.seg-ignore.active {
+  color: #fca5a5;
+}
+
 .status-seg-btn.seg-unprocessed.active { 
-  background: rgba(255, 255, 255, 0.15); 
-  color: #f8fafc; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: var(--glass-element-hover); 
+  color: var(--text); 
+  box-shadow: var(--glass-highlight), 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
 .status-seg-btn.seg-question.active { 
-  background: rgba(245, 158, 11, 0.3); 
-  color: #fde047; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.25); 
+  color: #d97706; 
+  box-shadow: var(--glass-highlight), 0 2px 8px rgba(245, 158, 11, 0.2);
 }
+[data-theme="dark"] .status-seg-btn.seg-question.active, body:not([data-theme="light"]) .status-seg-btn.seg-question.active {
+  color: #fde047;
+}
+
 .status-seg-btn.seg-target.active { 
-  background: rgba(34, 197, 94, 0.3); 
-  color: #86efac; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(34, 197, 94, 0.25);
+  background: rgba(34, 197, 94, 0.25); 
+  color: #16a34a; 
+  box-shadow: var(--glass-highlight), 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+[data-theme="dark"] .status-seg-btn.seg-target.active, body:not([data-theme="light"]) .status-seg-btn.seg-target.active {
+  color: #86efac;
 }
 
 /* Стеклянные маркеры ключевых слов */
 .keyword-green { 
   background-color: rgba(34, 197, 94, 0.2); 
-  color: #4ade80; 
+  color: #16a34a; 
   padding: 2px 6px; 
   border-radius: 6px; 
   font-weight: 600; 
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  border: 1px solid rgba(34, 197, 94, 0.35);
   backdrop-filter: blur(4px);
 }
+[data-theme="dark"] .keyword-green, body:not([data-theme="light"]) .keyword-green {
+  color: #4ade80;
+}
+
 .keyword-red { 
   background-color: rgba(239, 68, 68, 0.2); 
-  color: #f87171; 
+  color: #dc2626; 
   padding: 2px 6px; 
   border-radius: 6px; 
   font-weight: 600; 
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   backdrop-filter: blur(4px);
+}
+[data-theme="dark"] .keyword-red, body:not([data-theme="light"]) .keyword-red {
+  color: #f87171;
 }

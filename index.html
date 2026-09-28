@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,6 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gnumner 2.0</title>
   
+  <!-- Инициализация темы до рендеринга для предотвращения FOUC -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
   <!-- Зеленый фавикон -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='8' height='4' x='8' y='2' rx='1' ry='1'/><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/><path d='M12 11h4'/><path d='M12 16h4'/><path d='M8 11h.01'/><path d='M8 16h.01'/></svg>" type="image/svg+xml">
 
@@ -31,6 +40,9 @@
       <h1>Gnumner 2.0</h1>
     </div>
     <div style="display: flex; gap: 10px;">
+      <button class="btn btn-theme" id="themeToggleBtn" onclick="toggleTheme()" title="Переключить тему">
+        <i data-lucide="sun" class="icon-sm" id="themeIcon"></i>
+      </button>
       <button class="btn btn-excel" onclick="exportToExcel()">
         <i data-lucide="file-spreadsheet" class="icon-sm"></i>
       </button>
@@ -45,13 +57,11 @@
     <!-- Сюда JS будет вставлять чипы со статистикой -->
     <div id="statsChips" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;"></div>
     
-<!-- Множественный фильтр статусов с галочками -->
+    <!-- Множественный фильтр статусов с галочками -->
     <div class="status-dropdown-wrapper" style="position: relative; margin-left: auto;">
-      <!-- Новая кнопка-иконка фильтра -->
       <button class="btn-icon-filter" onclick="toggleStatusDropdown(event)" title="Фильтр статусов">
         <i data-lucide="list-filter"></i>
       </button>
-      <!-- Добавлено style="right: 0; left: auto;" чтобы выпадающее меню не уезжало за правый край экрана -->
       <div id="statusDropdown" class="category-dropdown-content" onclick="event.stopPropagation()" style="right: 0; left: auto; min-width: 200px;">
         <div class="dropdown-actions">
           <span onclick="selectAllStatuses(true)" class="dropdown-link">Выбрать все</span>
@@ -91,7 +101,7 @@
         <button class="tab active" id="tabAll" onclick="setDateFilter('all')">Все даты</button>
       </div>
 
- <!-- Объединенный интуитивный выбор диапазона (Публикация) -->
+      <!-- Объединенный интуитивный выбор диапазона (Публикация) -->
       <div class="native-date-range">
         <i data-lucide="calendar-days" class="icon-sm" style="color: var(--muted);"></i>
         <span class="range-label">Публикация</span>
