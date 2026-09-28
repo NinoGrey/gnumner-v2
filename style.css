@@ -416,10 +416,10 @@ a.link:hover {
 
 /* Кастомные стеклянные чекбоксы */
 .category-checkbox-item { 
-  display: flex; 
+display: flex; 
   align-items: center; 
   gap: 10px; 
-  padding: 6px 8px; 
+  padding: 8px 8px; 
   font-size: 0.85rem; 
   cursor: pointer; 
   border-radius: 8px;
@@ -428,10 +428,13 @@ a.link:hover {
 .category-checkbox-item:hover { background: rgba(255, 255, 255, 0.08); }
 
 .category-checkbox-item input[type="checkbox"] {
-  appearance: none;
+appearance: none;
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
+  min-width: 18px; /* Запрещаем чекбоксу сжиматься, если текст длинный */
+  min-height: 18px;
+  flex-shrink: 0;   /* Гарантирует сохранение размера 18x18px */
   border: 1px solid var(--glass-border-hover);
   background: rgba(0, 0, 0, 0.3);
   border-radius: 5px;
@@ -440,6 +443,7 @@ a.link:hover {
   position: relative;
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);
+  margin: 0;
 }
 
 .category-checkbox-item input[type="checkbox"]:checked {
@@ -451,13 +455,13 @@ a.link:hover {
 .category-checkbox-item input[type="checkbox"]:checked::after {
   content: '';
   position: absolute;
-  left: 5px;
-  top: 2px;
+  top: 45%;
+  left: 50%;
   width: 4px;
   height: 8px;
   border: solid white;
   border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg); /* Центрирует галочку строго по середине */
 }
 
 /* Категории (Стеклянные Плашки) */
