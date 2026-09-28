@@ -553,13 +553,12 @@ a.link:hover {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
   user-select: none;
+  transition: all 0.2s ease;
 }
 
 /* Темная тема */
@@ -568,11 +567,11 @@ a.link:hover {
 .status-badge.status-unprocessed { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.4); color: #cbd5e1; }
 .status-badge.status-ignore { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; }
 
-/* Светлая тема */
-[data-theme="light"] .status-badge.status-target { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #15803d; }
-[data-theme="light"] .status-badge.status-question { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #b45309; }
-[data-theme="light"] .status-badge.status-unprocessed { background: rgba(100, 116, 139, 0.15); border: 1px solid rgba(100, 116, 139, 0.35); color: #334155; }
-[data-theme="light"] .status-badge.status-ignore { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #b91c1c; }
+/* Светлая тема (Сочные плашки и четкий темный текст) */
+[data-theme="light"] .status-badge.status-target { background: #dcfce7; border: 1px solid #86efac; color: #14532d; }
+[data-theme="light"] .status-badge.status-question { background: #fef3c7; border: 1px solid #fde047; color: #78350f; }
+[data-theme="light"] .status-badge.status-unprocessed { background: #e2e8f0; border: 1px solid #cbd5e1; color: #0f172a; }
+[data-theme="light"] .status-badge.status-ignore { background: #fee2e2; border: 1px solid #fca5a5; color: #7f1d1d; }
 
 /* Категории */
 .category-badge {
@@ -664,25 +663,24 @@ a.link:hover {
 /* === СЕГМЕНТИРОВАННЫЙ ПЕРЕКЛЮЧАТЕЛЬ СТАТУСА В СТРОКАХ === */
 .status-segmented-control {
   display: inline-flex;
-  background: var(--segmented-bg);
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
   padding: 3px;
   gap: 3px;
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
 }
 
 [data-theme="light"] .status-segmented-control {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   border-color: rgba(203, 213, 225, 0.8);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .status-seg-btn {
   background: transparent;
   border: 1px solid transparent;
-  color: var(--muted);
+  color: #64748b;
   padding: 6px 10px;
   cursor: pointer;
   display: flex;
@@ -696,6 +694,12 @@ a.link:hover {
   color: #64748b;
 }
 
+.status-seg-btn svg {
+  stroke: currentColor;
+  fill: none;
+  transition: all 0.2s ease;
+}
+
 .status-seg-btn:hover { 
   color: var(--text); 
   background: var(--glass-element-hover); 
@@ -706,57 +710,51 @@ a.link:hover {
   color: #0f172a;
 }
 
-/* Активные состояния в темной теме */
+/* --- АКТИВНЫЕ СОСТОЯНИЯ (Яркая сплошная заливка + 100% белая иконка) --- */
+
+/* Нецелевые (Крестик) */
 .status-seg-btn.seg-ignore.active { 
-  background: rgba(239, 68, 68, 0.25); 
-  border-color: rgba(239, 68, 68, 0.5);
-  color: #fca5a5; 
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
-}
-.status-seg-btn.seg-unprocessed.active { 
-  background: rgba(255, 255, 255, 0.15); 
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #fff; 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.status-seg-btn.seg-question.active { 
-  background: rgba(245, 158, 11, 0.25); 
-  border-color: rgba(245, 158, 11, 0.5);
-  color: #fde047; 
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
-}
-.status-seg-btn.seg-target.active { 
-  background: rgba(34, 197, 94, 0.25); 
-  border-color: rgba(34, 197, 94, 0.5);
-  color: #86efac; 
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+  background: #ef4444 !important; 
+  border-color: #dc2626 !important;
+  color: #ffffff !important; 
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
 }
 
-/* Активные состояния в светлой теме (Высокий контраст) */
-[data-theme="light"] .status-seg-btn.seg-ignore.active { 
-  background: rgba(239, 68, 68, 0.18); 
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #b91c1c; 
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);
+/* На рассмотрении (Прочерк) */
+.status-seg-btn.seg-unprocessed.active { 
+  background: #64748b !important; 
+  border-color: #475569 !important;
+  color: #ffffff !important; 
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
 }
-[data-theme="light"] .status-seg-btn.seg-unprocessed.active { 
-  background: rgba(100, 116, 139, 0.18); 
-  border-color: rgba(100, 116, 139, 0.35);
-  color: #0f172a; 
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+/* На проверку (Флажок) */
+.status-seg-btn.seg-question.active { 
+  background: #f59e0b !important; 
+  border-color: #d97706 !important;
+  color: #ffffff !important; 
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
 }
-[data-theme="light"] .status-seg-btn.seg-question.active { 
-  background: rgba(245, 158, 11, 0.18); 
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #b45309; 
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);
+
+/* Целевые (Галочка) */
+.status-seg-btn.seg-target.active { 
+  background: #10b981 !important; 
+  border-color: #059669 !important;
+  color: #ffffff !important; 
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
-[data-theme="light"] .status-seg-btn.seg-target.active { 
-  background: rgba(34, 197, 94, 0.18); 
-  border-color: rgba(34, 197, 94, 0.4);
-  color: #15803d; 
-  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.15);
+
+/* Принудительная установка белого цвета для всех иконок активных кнопок */
+.status-seg-btn.active svg,
+.status-seg-btn.active svg path {
+  stroke: #ffffff !important;
 }
+
+/* Более глубокие оттенки для светлой темы */
+[data-theme="light"] .status-seg-btn.seg-ignore.active { background: #dc2626 !important; }
+[data-theme="light"] .status-seg-btn.seg-unprocessed.active { background: #475569 !important; }
+[data-theme="light"] .status-seg-btn.seg-question.active { background: #d97706 !important; }
+[data-theme="light"] .status-seg-btn.seg-target.active { background: #059669 !important; }
 
 /* Подсветка ключевых слов */
 .keyword-green { 
