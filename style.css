@@ -15,7 +15,6 @@
   --h1-color: #fff;
   --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', sans-serif;
   
-  /* Переменные жидкого стекла iOS (Темная тема) */
   --glass-card: rgba(22, 32, 50, 0.45);
   --glass-card-hover: rgba(30, 44, 70, 0.6);
   --glass-element: rgba(255, 255, 255, 0.06);
@@ -60,7 +59,7 @@
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
 }
 
-/* === СВЕТЛАЯ ЦВЕТОВАЯ СХЕМА (LIQUID GLASS) === */
+/* === СВЕТЛАЯ ЦВЕТОВАЯ СХЕМА === */
 [data-theme="light"] {
   --bg: #f1f5f9;
   --body-bg: 
@@ -76,7 +75,6 @@
   --warning: #d97706;
   --h1-color: #0f172a;
 
-  /* Переменные жидкого стекла iOS (Светлая тема) */
   --glass-card: rgba(255, 255, 255, 0.65);
   --glass-card-hover: rgba(255, 255, 255, 0.82);
   --glass-element: rgba(255, 255, 255, 0.7);
@@ -112,7 +110,7 @@
   --table-border: rgba(0, 0, 0, 0.06);
   --tr-hover: rgba(0, 0, 0, 0.025);
   --checkbox-bg: rgba(255, 255, 255, 0.9);
-  --segmented-bg: rgba(226, 232, 240, 0.7);
+  --segmented-bg: rgba(255, 255, 255, 0.85);
   
   --scrollbar-track: rgba(0, 0, 0, 0.05);
   --scrollbar-thumb: rgba(0, 0, 0, 0.15);
@@ -138,7 +136,6 @@
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
-/* --- МНОГОСЛОЙНЫЙ ЖИВОЙ ФОН С ПРЕЛОМЛЕНИЕМ --- */
 body { 
   background: var(--body-bg);
   background-attachment: fixed;
@@ -161,7 +158,6 @@ h1 {
   text-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 
-/* --- КНОПКИ (LIQUID GLASS BUTTONS) --- */
 .btn {
   background: var(--btn-bg); 
   color: var(--btn-text); 
@@ -203,7 +199,7 @@ h1 {
 
 .icon-sm { width: 16px; height: 16px; vertical-align: middle; }
 
-/* --- ПЛАВАЮЩАЯ СТЕКЛЯННАЯ ПАНЕЛЬ СТАТИСТИКИ --- */
+/* --- ПАНЕЛЬ СТАТИСТИКИ --- */
 .stats-summary {
   position: sticky;
   top: 12px;
@@ -229,7 +225,6 @@ h1 {
   border-color: var(--glass-border-hover);
 }
 
-/* Стеклянные капсулы статистики */
 .stat-chip {
   display: inline-flex;
   align-items: center;
@@ -281,7 +276,7 @@ h1 {
   border-color: var(--glass-border-hover);
 }
 
-/* --- ПАНЕЛЬ ФИЛЬТРОВ И ПОИСКА --- */
+/* --- ФИЛЬТРЫ И ПОИСК --- */
 .controls { 
   background: var(--glass-card);
   backdrop-filter: var(--glass-blur);
@@ -298,7 +293,6 @@ h1 {
 
 .controls-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 
-/* Переключатель вкладок в стиле iOS Segmented Control */
 .tabs { 
   display: flex; 
   background: var(--tabs-bg); 
@@ -330,7 +324,6 @@ h1 {
   box-shadow: var(--glass-highlight), 0 4px 12px rgba(0, 0, 0, 0.1); 
 }
 
-/* Стеклянные капсулы ввода дат */
 .native-date-range {
   display: inline-flex;
   align-items: center;
@@ -367,7 +360,6 @@ h1 {
   cursor: pointer;
 }
 
-/* Стеклянное поле поиска */
 input[type="text"] {
   background: var(--input-bg); 
   border: 1px solid var(--glass-border); 
@@ -392,7 +384,7 @@ input[type="text"]:focus {
 
 #statusLog { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; display: block; font-family: ui-monospace, monospace; }
 
-/* --- СТЕКЛЯННАЯ ТАБЛИЦА --- */
+/* --- ТАБЛИЦА --- */
 .table-container { 
   overflow-x: auto; 
   background: var(--glass-card);
@@ -406,10 +398,7 @@ input[type="text"]:focus {
 
 table { width: 100%; border-collapse: collapse; font-size: 0.875rem; text-align: left; }
 th, td { padding: 16px 18px; border-bottom: 1px solid var(--table-border); vertical-align: middle; }
-td {
-  position: relative;
-  z-index: 1;
-}
+td { position: relative; z-index: 1; }
 th { 
   background: var(--th-bg); 
   color: var(--muted); 
@@ -431,7 +420,6 @@ th:hover { color: var(--text); }
 tr { transition: background-color 0.2s ease; }
 tr:hover { background: var(--tr-hover); }
 
-/* Подсветка строк таблицы с жидким стеклянным оттенком */
 tr.row-target {
   background-color: rgba(34, 197, 94, 0.12) !important;
   box-shadow: inset 4px 0 0 #22c55e, var(--glass-highlight);
@@ -458,7 +446,6 @@ tr.row-ignore:hover { background-color: rgba(239, 68, 68, 0.22) !important; opac
 .deadline-soon .td-date { color: var(--warning); }
 .deadline-expired .td-date { color: var(--danger); text-decoration: line-through; opacity: 0.7; }
 
-/* Стеклянные ссылки-кнопки */
 a.link { 
   background: var(--glass-element); 
   border: 1px solid var(--glass-border); 
@@ -481,11 +468,8 @@ a.link:hover {
   transform: translateY(-1px);
 }
 
-/* --- ВЫПАДАЮЩИЕ МЕНЮ И ВСПЛЫВАЮЩИЕ ОКНА (iOS CONTEXT MENU) --- */
-.th-dropdown-container { 
-  position: relative;
-  z-index: 100; 
-}
+/* --- ВЫПАДАЮЩИЕ МЕНЮ И ВСПЛЫВАЮЩИЕ ОКНА --- */
+.th-dropdown-container { position: relative; z-index: 100; }
 .category-dropdown-content {
   display: none; 
   position: absolute; 
@@ -516,7 +500,6 @@ a.link:hover {
 .dropdown-link { color: var(--link-color); cursor: pointer; font-weight: 500; }
 .dropdown-link:hover { text-decoration: underline; }
 
-/* Кастомные стеклянные чекбоксы */
 .category-checkbox-item { 
   display: flex; 
   align-items: center; 
@@ -566,7 +549,32 @@ a.link:hover {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-/* Категории (Стеклянные Плашки) */
+/* === ВЫСОКОКОНТРАСТНЫЕ БЭДЖИ СТАТУСОВ В ВЫПАДАЮЩЕМ ФИЛЬТРЕ === */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Темная тема */
+.status-badge.status-target { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; }
+.status-badge.status-question { background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4); color: #fde047; }
+.status-badge.status-unprocessed { background: rgba(148, 163, 184, 0.2); border: 1px solid rgba(148, 163, 184, 0.4); color: #cbd5e1; }
+.status-badge.status-ignore { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; }
+
+/* Светлая тема */
+[data-theme="light"] .status-badge.status-target { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #15803d; }
+[data-theme="light"] .status-badge.status-question { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #b45309; }
+[data-theme="light"] .status-badge.status-unprocessed { background: rgba(100, 116, 139, 0.15); border: 1px solid rgba(100, 116, 139, 0.35); color: #334155; }
+[data-theme="light"] .status-badge.status-ignore { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #b91c1c; }
+
+/* Категории */
 .category-badge {
   white-space: normal !important;
   word-break: break-word;
@@ -589,7 +597,7 @@ a.link:hover {
   z-index: 1;
 }
 
-/* --- СТЕКЛЯННАЯ ПАГИНАЦИЯ --- */
+/* --- ПАГИНАЦИЯ --- */
 .pagination-container {
   display: flex; 
   align-items: center; 
@@ -653,21 +661,27 @@ a.link:hover {
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* --- СЕГМЕНТИРОВАННЫЕ ПЕРЕКЛЮЧАТЕЛИ СОСТОЯНИЯ В СТРОКАХ --- */
+/* === СЕГМЕНТИРОВАННЫЙ ПЕРЕКЛЮЧАТЕЛЬ СТАТУСА В СТРОКАХ === */
 .status-segmented-control {
   display: inline-flex;
   background: var(--segmented-bg);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
-  padding: 2px;
-  gap: 2px;
+  padding: 3px;
+  gap: 3px;
   backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] .status-segmented-control {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .status-seg-btn {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: var(--muted);
   padding: 6px 10px;
   cursor: pointer;
@@ -675,45 +689,76 @@ a.link:hover {
   align-items: center;
   justify-content: center;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 8px;
+  border-radius: 7px;
 }
 
-.status-seg-btn:hover { color: var(--text); background: var(--glass-element-hover); }
+[data-theme="light"] .status-seg-btn {
+  color: #64748b;
+}
 
+.status-seg-btn:hover { 
+  color: var(--text); 
+  background: var(--glass-element-hover); 
+}
+
+[data-theme="light"] .status-seg-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #0f172a;
+}
+
+/* Активные состояния в темной теме */
 .status-seg-btn.seg-ignore.active { 
   background: rgba(239, 68, 68, 0.25); 
-  color: #dc2626; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5; 
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
 }
-[data-theme="dark"] .status-seg-btn.seg-ignore.active, body:not([data-theme="light"]) .status-seg-btn.seg-ignore.active {
-  color: #fca5a5;
-}
-
 .status-seg-btn.seg-unprocessed.active { 
-  background: var(--glass-element-hover); 
-  color: var(--text); 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.15); 
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-
 .status-seg-btn.seg-question.active { 
   background: rgba(245, 158, 11, 0.25); 
-  color: #d97706; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fde047; 
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
 }
-[data-theme="dark"] .status-seg-btn.seg-question.active, body:not([data-theme="light"]) .status-seg-btn.seg-question.active {
-  color: #fde047;
-}
-
 .status-seg-btn.seg-target.active { 
   background: rgba(34, 197, 94, 0.25); 
-  color: #16a34a; 
-  box-shadow: var(--glass-highlight), 0 2px 8px rgba(34, 197, 94, 0.2);
-}
-[data-theme="dark"] .status-seg-btn.seg-target.active, body:not([data-theme="light"]) .status-seg-btn.seg-target.active {
-  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #86efac; 
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
 }
 
-/* Стеклянные маркеры ключевых слов */
+/* Активные состояния в светлой теме (Высокий контраст) */
+[data-theme="light"] .status-seg-btn.seg-ignore.active { 
+  background: rgba(239, 68, 68, 0.18); 
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #b91c1c; 
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);
+}
+[data-theme="light"] .status-seg-btn.seg-unprocessed.active { 
+  background: rgba(100, 116, 139, 0.18); 
+  border-color: rgba(100, 116, 139, 0.35);
+  color: #0f172a; 
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .status-seg-btn.seg-question.active { 
+  background: rgba(245, 158, 11, 0.18); 
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #b45309; 
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);
+}
+[data-theme="light"] .status-seg-btn.seg-target.active { 
+  background: rgba(34, 197, 94, 0.18); 
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #15803d; 
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.15);
+}
+
+/* Подсветка ключевых слов */
 .keyword-green { 
   background-color: rgba(34, 197, 94, 0.2); 
   color: #16a34a; 
