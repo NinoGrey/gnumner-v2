@@ -86,23 +86,36 @@ function updateThemeIcon(theme) {
 const GREEN_KEYWORDS = ['համազգեստ','հագուստ', 'Կոշիկ','Հանդերձանք','արտահագուստ','կտոր','Կիսաբաճկոն','բաճկոն','Խալաթ','Անկողնային','Սավան'];
 const RED_KEYWORDS = ['ԿԱՀՈՒՅՔ', 'ծառայություն', 'ՕԴՈՐԱԿԻՉ', 'ՀԱՄԱԿԱՐԳԻՉ','ՀԱՄԱԿԱՐԳՉԱՅԻՆ', 'պլանշետներ', 'վերկառուցուման','կենցաղային', 'աշխատանք', 'տեխնիկա', 'լուծում','կազմակերպման', 'բարեկարգման','սարքավորում','էլեկտրական','մեքենա', 'շինարարական', 'շինարար','Դեղորայք','պատվաստանյութ', 'ԿԱՆԱՉԱՊԱՏ','բարեկարգման','Համակարգիչ','վառելիք', 'քարթիրջներ', 'համակարգ','սարքերի', 'պահեստամասեր','ավտոմեքենա', 'լաբորատոր', 'պարագաներ', 'միջոցառում', 'փորձաքննութ', 'փաստաթղթեր', 'գործիք', 'հիմնանորոգ','մթերք','գրասենյակային', 'նախագծանախահաշվ','կառուց', 'ասֆալտապատման','ծրագրային']; 
 
+// Вспомогательная функция для экранирования спецсимволов RegExp
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function highlightKeywords(titleText) {
   if (!titleText) return '';
-  
-  let formattedText = titleText;
 
-  const replaceWords = (text, words, colorClass) => {
-    words.forEach(word => {
-      if (!word.trim()) return;
-      const regex = new RegExp(`(${word.trim()})`, 'gi');
-      formattedText = formattedText.replace(regex, `<span class="keyword-${colorClass}">$1</span>`);
-    });
-  };
+  // 1. Создаем карты нормализованных слов
+  const greenSet = new Set(GREEN_KEYWORDS.map(w => w.trim().toLowerCase()).filter(Boolean));
+  const redSet = new Set(RED_KEYWORDS.map(w => w.trim().toLowerCase()).filter(Boolean));
 
-  replaceWords(formattedText, GREEN_KEYWORDS, 'green');
-  replaceWords(formattedText, RED_KEYWORDS, 'red');
+  // 2. Объединяем слова и сортируем по убыванию длины (чтобы длинные совпадали первыми)
+  const allKeywords = [...greenSet, ...redSet].sort((a, b) => b.length - a.length);
 
-  return formattedText;
+  if (allKeywords.length === 0) return titleText;
+
+  // 3. Формируем единое регулярное выражение
+  const pattern = new RegExp(allKeywords.map(escapeRegExp).join('|'), 'gi');
+
+  // 4. Заменяем за один проход без вложенности
+  return titleText.replace(pattern, (match) => {
+    const lowerMatch = match.toLowerCase();
+    if (greenSet.has(lowerMatch)) {
+      return `<span class="keyword-green">${match}</span>`;
+    } else if (redSet.has(lowerMatch)) {
+      return `<span class="keyword-red">${match}</span>`;
+    }
+    return match;
+  });
 }
 
 // ====== ИНИЦИАЛИЗАЦИЯ ======
